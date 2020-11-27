@@ -20,7 +20,8 @@
           (str (when (> world/*retry-attempt-nr* 0) world/*retry-attempt-nr*))))))
 
 ; TODO fix keywordizing. Probably need to decode without keywordizing and keywordize manually using clojure.walk.
-(def data
+(defn generate-data
+  []
   (-> "resources/schema.edn"
       (slurp)
       (edn/read-string)
@@ -30,6 +31,8 @@
       (world/gen (-> "resources/pop.edn"
                      (slurp)
                      (edn/read-string)))))
+
+(def data (generate-data))
 
 (def schema (json/parse-string (slurp "resources/ooapiv4.json")
                                #(if (str/starts-with? % "/") % (keyword %))))
@@ -41,7 +44,8 @@
    "/academic-sessions"                               {:ooapi/cardinality :many
                                                        :ooapi/datatype :academicSession}
    "/academic-sessions/{academicSessionId}"           {:ooapi/cardinality :one
-                                                       :ooapi/datatype :academicSession}
+                                                       :ooapi/datatype :academicSession
+                                                       :ooapi/id-path [:path-params :academicSessionId]}
    "/academic-sessions/{academicSessionId}/offerings" {:ooapi/cardinality :many
                                                        :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
 
@@ -52,7 +56,7 @@
                                                        :ooapi/sort #{"name" "ects" "courseId"}}
    "/courses/{courseId}"                              {:ooapi/cardinality :one
                                                        :ooapi/datatype :course
-                                                       :ooapi/id-path [:parameters :path :courseId]}
+                                                       :ooapi/id-path [:path-params :courseId]}
    "/courses/{courseId}/offerings"                    {:ooapi/cardinality :many
                                                        :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
 
@@ -62,14 +66,16 @@
    "/persons"                                         {:ooapi/cardinality :many
                                                        :ooapi/datatype :person}
    "/persons/{personId}"                              {:ooapi/cardinality :one
-                                                       :ooapi/datatype :person}
+                                                       :ooapi/datatype :person
+                                                       :ooapi/id-path [:path-params :personId]}
    "/persons/{personId}/associations"                 {:ooapi/cardinality :many
                                                        :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
 
    "/programs"                                        {:ooapi/cardinality :many
                                                        :ooapi/datatype :program}
    "/programs/{programId}"                            {:ooapi/cardinality :one
-                                                       :ooapi/datatype :program}
+                                                       :ooapi/datatype :program
+                                                       :ooapi/id-path [:path-params :programId]}
    "/programs/{programId}/courses"                    {:ooapi/cardinality :many
                                                        :ooapi/datatype :course}
    "/programs/{programId}/offerings"                  {:ooapi/cardinality :many
