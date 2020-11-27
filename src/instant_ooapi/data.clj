@@ -19,6 +19,7 @@
           (str/replace #"[^a-z0-9]+" "-")
           (str (when (> world/*retry-attempt-nr* 0) world/*retry-attempt-nr*))))))
 
+; TODO fix keywordizing. Probably need to decode without keywordizing and keywordize manually using clojure.walk.
 (def data
   (-> "resources/schema.edn"
       (slurp)
@@ -34,16 +35,45 @@
                                #(if (str/starts-with? % "/") % (keyword %))))
 
 (def route-data
-  {"/courses/{courseId}" {:ooapi/cardinality :one
-                          :ooapi/datatype :course
-                          :ooapi/id-path [:parameters :path :courseId]}
-   "/courses"            {:ooapi/cardinality :many
-                          :ooapi/datatype :course
-                          :ooapi/filters #{:level :modeOfDelivery}
-                          :ooapi/q-fields #{:name :abbreviation :description}
-                          :ooapi/sort #{"name" "ects" "courseId"}}})
+  {"/associations/{associationId}"                    {:ooapi/cardinality :one
+                                                       :ooapi/datatype [:programAssociation :courseAssociation]}
 
+   "/academic-sessions"                               {:ooapi/cardinality :many
+                                                       :ooapi/datatype :academicSession}
+   "/academic-sessions/{academicSessionId}"           {:ooapi/cardinality :one
+                                                       :ooapi/datatype :academicSession}
+   "/academic-sessions/{academicSessionId}/offerings" {:ooapi/cardinality :many
+                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
 
+   "/courses"                                         {:ooapi/cardinality :many
+                                                       :ooapi/datatype :course
+                                                       :ooapi/filters #{:level :modeOfDelivery}
+                                                       :ooapi/q-fields #{:name :abbreviation :description}
+                                                       :ooapi/sort #{"name" "ects" "courseId"}}
+   "/courses/{courseId}"                              {:ooapi/cardinality :one
+                                                       :ooapi/datatype :course
+                                                       :ooapi/id-path [:parameters :path :courseId]}
+   "/courses/{courseId}/offerings"                    {:ooapi/cardinality :many
+                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
+
+   "/offerings/{offeringId}"                          {:ooapi/cardinality :one
+                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
+
+   "/persons"                                         {:ooapi/cardinality :many
+                                                       :ooapi/datatype :person}
+   "/persons/{personId}"                              {:ooapi/cardinality :one
+                                                       :ooapi/datatype :person}
+   "/persons/{personId}/associations"                 {:ooapi/cardinality :many
+                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
+
+   "/programs"                                        {:ooapi/cardinality :many
+                                                       :ooapi/datatype :program}
+   "/programs/{programId}"                            {:ooapi/cardinality :one
+                                                       :ooapi/datatype :program}
+   "/programs/{programId}/courses"                    {:ooapi/cardinality :many
+                                                       :ooapi/datatype :course}
+   "/programs/{programId}/offerings"                  {:ooapi/cardinality :many
+                                                       :ooapi/datatype :programOffering}})
 (defn build-routes
   [schema]
   (for [[path methods] (:paths schema)]

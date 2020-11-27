@@ -76,35 +76,35 @@
                 :link {:generator [:format "https://%s/"]
                        :deps [:organization/_linkDomain]}}}
 
-  {:name "academic-session"
+  {:name "academicSession"
    :attributes {:academicSessionId {:generator [:uuid]}
                 :_nameType {:hidden true
                             :generator [:one-of ["blok" "periode" "semester"]]}
                 :_nameNumber {:hidden true
                               :generator [:int 1 2]}
                 :name {:generator [:format "%s %s"]
-                       :deps [:academic-session/_nameType :academic-session/_nameNumber]}
+                       :deps [:academicSession/_nameType :academicSession/_nameNumber]}
                 :_termMinYear {:hidden true :value 1990}
                 :_termMaxStartYear {:hidden true :value 2019}
                 :_termStartMonth {:hidden true
                                   :generator [:one-of ["february" "september"]]}
                 :_termStartYear {:hidden true
                                  :generator [:int]
-                                 :deps [:academic-session/_termMinYear :academic-session/_termMaxStartYear]}
+                                 :deps [:academicSession/_termMinYear :academicSession/_termMaxStartYear]}
                 :startDate {:generator [:first-weekday-of "monday"]
-                            :deps [:academic-session/_termStartYear :academic-session/_termStartMonth]}
+                            :deps [:academicSession/_termStartYear :academicSession/_termStartMonth]}
                 :_termStartYearAfter {:hidden true
                                       :generator [:inc]
-                                      :deps [:academic-session/_termStartYear]}
+                                      :deps [:academicSession/_termStartYear]}
                 :_termMaxEndYear {:hidden true
                                   :value 2030}
                 :_termEndYear {:hidden true
                                :generator [:int]
-                               :deps [:academic-session/_termStartYearAfter :academic-session/_termMaxEndYear]}
+                               :deps [:academicSession/_termStartYearAfter :academicSession/_termMaxEndYear]}
                 :_termEndMonth {:hidden true
                                 :generator [:one-of ["january" "august"]]}
                 :endDate {:generator :last-day-of
-                          :deps [:academic-session/_termEndYear :academic-session/_termEndMonth]}}}
+                          :deps [:academicSession/_termEndYear :academicSession/_termEndMonth]}}}
 
   {:name "program"
    :refs {:organization {:hidden false
@@ -181,12 +181,12 @@
           :organization {:hidden false
                          :deps [:organization/organizationId]}
           :academicSession {:hidden false
-                            :deps [:academic-session/academicSessionId]}}
+                            :deps [:academicSession/academicSessionId]}}
    :attributes {:offeringId               {:generator [:uuid]}
                 :type                     {:value "program"}
                 :name                     {:generator [:format "%s - %s"]
                                            :deps [[:programOffering/program :program/name]
-                                                  [:programOffering/academicSession :academic-session/name]]}
+                                                  [:programOffering/academicSession :academicSession/name]]}
                 :abbreviation             {:deps [[:programOffering/program :program/abbreviation]]}
                 :description              {:deps [[:programOffering/program :program/description]]}
                 :mainLanguage             {:generator [:one-of ["nl-NL" "en-GB"]]}
@@ -203,9 +203,9 @@
                 :resultValueType          {:generator [:one-of ["pass-or-fail" "US letter" "UK letter" "0-100" "1-10"]]}
                 :modeOfStudy              {:generator [:one-of ["full-time" "part-time" "dual training" "self-paced"]]}
                 :startDate                {:generator [:format "%tF"]
-                                           :deps [[:programOffering/academicSession :academic-session/startDate]]}
+                                           :deps [[:programOffering/academicSession :academicSession/startDate]]}
                 :endDate                  {:generator [:format "%tF"]
-                                           :deps [[:programOffering/academicSession :academic-session/endDate]]}}}
+                                           :deps [[:programOffering/academicSession :academicSession/endDate]]}}}
 
   {:name "courseOffering"
    :refs {:course {:deps [:course/courseId]
@@ -213,12 +213,12 @@
           :organization {:hidden false
                          :deps [:organization/organizationId]}
           :academicSession {:hidden false
-                            :deps [:academic-session/academicSessionId]}}
+                            :deps [:academicSession/academicSessionId]}}
    :attributes {:offeringId               {:generator [:uuid]}
                 :type                     {:value "course"}
                 :name                     {:generator [:format "%s - %s"]
                                            :deps [[:courseOffering/course :course/name]
-                                                  [:courseOffering/academicSession :academic-session/name]]}
+                                                  [:courseOffering/academicSession :academicSession/name]]}
                 :abbreviation             {:deps [[:courseOffering/course :course/abbreviation]]}
                 :description              {:deps [[:courseOffering/course :course/description]]}
                 :mainLanguage             {:generator [:one-of ["nl-NL" "en-GB"]]}
@@ -235,9 +235,9 @@
                 :resultValueType          {:generator [:one-of ["pass-or-fail" "US letter" "UK letter" "0-100" "1-10"]]}
                 :modeOfStudy              {:generator [:one-of ["full-time" "part-time" "dual training" "self-paced"]]}
                 :startDate                {:generator [:format "%tF"]
-                                           :deps [[:courseOffering/academicSession :academic-session/startDate]]}
+                                           :deps [[:courseOffering/academicSession :academicSession/startDate]]}
                 :endDate                  {:generator [:format "%tF"]
-                                           :deps [[:courseOffering/academicSession :academic-session/endDate]]}}}
+                                           :deps [[:courseOffering/academicSession :academicSession/endDate]]}}}
 
   {:name "person"
    :refs {:organization {:hidden false
@@ -292,7 +292,7 @@
                 :_office4 {:hidden true
                            :generator [:char "0" "9"]}}}
 
-  {:name "programAssociation"
+  {:name "programOfferingAssociation"
    :refs {:programOffering {:hidden false
                             :deps [:programOffering/offeringId]}
           :person {:hidden false
@@ -306,11 +306,11 @@
                 :type {:value "programOfferingAssociation"}
                 :state {:generator [:one-of ["pending" "canceled"  "denied" "associated"]]}
                 :result {:generator [:object "state" "comment" "score" "resultDate" "ects"]
-                         :deps [:programAssociation/_resultState
-                                :programAssociation/_resultComment
-                                :programAssociation/_resultScore
-                                :programAssociation/_resultResultDate
-                                :programAssociation/_resultEcts]}
+                         :deps [:programOfferingAssociation/_resultState
+                                :programOfferingAssociation/_resultComment
+                                :programOfferingAssociation/_resultScore
+                                :programOfferingAssociation/_resultResultDate
+                                :programOfferingAssociation/_resultEcts]}
                 :_resultEcts {:hidden true
                               :generator [:weighted {18 3 12 4 24 3 10 1 9 3 5 1 7.5 2 15 2 3 3 6 4}]}
                 :_resultScore {:hidden true
@@ -319,7 +319,7 @@
                 :_resultComment {:hidden true
                                  :generator [:lorum-ipsum]}}}
 
-  {:name "courseAssociation"
+  {:name "courseOfferingAssociation"
    :refs {:courseOffering {:hidden false
                            :deps [:courseOffering/offeringId]}
           :person {:hidden false
@@ -333,11 +333,11 @@
                 :type {:value "courseOfferingAssociation"}
                 :state {:generator [:one-of ["pending" "canceled"  "denied" "associated"]]}
                 :result {:generator [:object "state" "comment" "score" "resultDate" "ects"]
-                         :deps [:courseAssociation/_resultState
-                                :courseAssociation/_resultComment
-                                :courseAssociation/_resultScore
-                                :courseAssociation/_resultResultDate
-                                :courseAssociation/_resultEcts]}
+                         :deps [:courseOfferingAssociation/_resultState
+                                :courseOfferingAssociation/_resultComment
+                                :courseOfferingAssociation/_resultScore
+                                :courseOfferingAssociation/_resultResultDate
+                                :courseOfferingAssociation/_resultEcts]}
                 :_resultEcts {:hidden true
                               :generator [:weighted {18 3 12 4 24 3 10 1 9 3 5 1 7.5 2 15 2 3 3 6 4}]}
                 :_resultScore {:hidden true
