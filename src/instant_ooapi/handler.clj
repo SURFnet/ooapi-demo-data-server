@@ -125,12 +125,16 @@
        (drop (* size (dec number))) ; we decrease by one because first page number is 1
        (take size)))
 
+(defn get-items
+  [req]
+  (let [datatype (req->datatype req)]
+    (get data datatype)))
+
 (defn many-handler
   [req]
-  (let [datatype (req->datatype req)
-        page-size (get-in req [:query-params :pageSize])
+  (let [page-size (get-in req [:query-params :pageSize])
         page-number (get-in req [:query-params :pageNumber] 1)
-        items (get data datatype)]
+        items (get-items req)]
     {:pageSize page-size
      :pageNumber page-number
      :items (->> items

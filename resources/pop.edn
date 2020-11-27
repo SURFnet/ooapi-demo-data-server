@@ -1,2 +1,10 @@
 {:service 1
- :course 20}
+ :organization 10
+ :academic-session 4
+ :program 4
+ :programOffering 10
+ :programAssociation 50
+ :course 20
+ :courseOffering 30
+ :courseAssociation 50
+ :person 100}

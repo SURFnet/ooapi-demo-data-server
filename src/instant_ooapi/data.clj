@@ -6,6 +6,19 @@
     [nl.surf.demo-data.config :as config]
     [nl.surf.demo-data.world :as world]))
 
+(defmethod config/generator "minus" [_]
+  (fn minus [_ & xs]
+    (apply - xs)))
+
+(defmethod config/generator "sanitize" [_]
+  (fn sanitize [_ x]
+    (when x
+      (-> x
+          str/lower-case
+          str/trim
+          (str/replace #"[^a-z0-9]+" "-")
+          (str (when (> world/*retry-attempt-nr* 0) world/*retry-attempt-nr*))))))
+
 (def data
   (-> "resources/schema.edn"
       (slurp)
