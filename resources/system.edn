@@ -1,6 +1,6 @@
 {:instant-ooapi.handler/app {}
 
  :instant-ooapi.http/server {:settings {:port 8080}
-                          :handler #ig/ref :instant-ooapi.handler/app}}
+                             :handler #ig/ref :instant-ooapi.handler/app}}
 
 
