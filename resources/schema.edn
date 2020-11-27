@@ -197,8 +197,8 @@
                                                    :programOffering/enrolledNumberStudents]
                                             :generator [:minus]
                                             :hidden true}
-                :pendingNumberStudents    {:deps [:programOffering/_maxNumberPendingStudents]
-                                           :generator [:int 0]}
+                :pendingNumberStudents    {;:deps [:programOffering/_maxNumberPendingStudents]
+                                           :generator [:int 0 10]}
                 :isLineItem               {:generator [:boolean]}
                 :resultValueType          {:generator [:one-of ["pass-or-fail" "US letter" "UK letter" "0-100" "1-10"]]}
                 :modeOfStudy              {:generator [:one-of ["full-time" "part-time" "dual training" "self-paced"]]}
@@ -229,8 +229,8 @@
                                                    :courseOffering/enrolledNumberStudents]
                                             :generator [:minus]
                                             :hidden true}
-                :pendingNumberStudents    {:deps [:courseOffering/_maxNumberPendingStudents]
-                                           :generator [:int 0]}
+                :pendingNumberStudents    {;:deps [:courseOffering/_maxNumberPendingStudents]
+                                           :generator [:int 0 10]}
                 :isLineItem               {:generator [:boolean]}
                 :resultValueType          {:generator [:one-of ["pass-or-fail" "US letter" "UK letter" "0-100" "1-10"]]}
                 :modeOfStudy              {:generator [:one-of ["full-time" "part-time" "dual training" "self-paced"]]}
