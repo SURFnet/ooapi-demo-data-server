@@ -40,16 +40,17 @@
 (def route-data
   {"/associations/{associationId}"                    {:ooapi/cardinality :one
                                                        :ooapi/id-path [:path-params :associationId]
-                                                       :ooapi/datatype [:programAssociation :courseAssociation]
-                                                       :ooapi/expand #{:persons :offering}}
+                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]
+                                                       :ooapi/expand {"person" [:one [:programOfferingAssociation/person :courseOfferingAssociation/person]]
+                                                                      "offering" [:one [:programOfferingAssociation/programOffering :courseOfferingAssociation/courseOffering] :offering]}}
 
    "/academic-sessions"                               {:ooapi/cardinality :many
                                                        :ooapi/datatype :academicSession ; TODO requires special filter to filter by parent and year
                                                        :ooapi/sort #{"startDate" "academicSessionId" "name"}}
    "/academic-sessions/{academicSessionId}"           {:ooapi/cardinality :one
                                                        :ooapi/datatype :academicSession
-                                                       :ooapi/id-path [:path-params :academicSessionId]
-                                                       :ooapi/expand #{:parent :year}}
+                                                       :ooapi/id-path [:path-params :academicSessionId]}
+                                                       ;:ooapi/expand #{:parent :year}}
    "/academic-sessions/{academicSessionId}/offerings" {:ooapi/cardinality :many
                                                        :ooapi/datatype [:programOffering :courseOffering]
                                                        :ooapi/filters #{:type :mainLanguage :isLineItem}
@@ -66,7 +67,9 @@
    "/courses/{courseId}"                              {:ooapi/cardinality :one
                                                        :ooapi/datatype :course
                                                        :ooapi/id-path [:path-params :courseId]
-                                                       :ooapi/expand #{:programs :coordinator :organization}} ; TODO expand might need a map structure here as well
+                                                       :ooapi/expand {"programs" [:many :course/program :programs]
+                                                                      "coordinator" [:one :course/coordinator]
+                                                                      "organization" [:one :course/organization]}}
    "/courses/{courseId}/offerings"                    {:ooapi/cardinality :many ; TODO: add filters for since and until
                                                        :ooapi/datatype :courseOffering
                                                        :ooapi/filters #{:mainLanguage :modeOfStudy :isLineItem}
@@ -77,7 +80,12 @@
    "/offerings/{offeringId}"                          {:ooapi/cardinality :one
                                                        :ooapi/id-path [:path-params :offeringId]
                                                        :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]
-                                                       :ooapi/expand #{"program" "programOffering" "course" "courseOffering" "organization" "academicSession"}}
+                                                       :ooapi/expand {"program" [:one :programOffering/program]
+                                                                      ;"programOffering" [:one] TODO fix this
+                                                                      "course" [:one :courseOffering/course]
+                                                                      ;"courseOffering" [:one] TODO fix this
+                                                                      "organization" [:one [:programOffering/organization :courseOffering/organization]]
+                                                                      "academicSession" [:one [:programOffering/academicSession :courseOffering/academicSession]]}}
 
    "/persons"                                         {:ooapi/cardinality :many
                                                        :ooapi/datatype :person
@@ -102,7 +110,9 @@
    "/programs/{programId}"                            {:ooapi/cardinality :one
                                                        :ooapi/datatype :program
                                                        :ooapi/id-path [:path-params :programId]
-                                                       :ooapi/expand #{"parent" "children" "organization"}}
+                                                       :ooapi/expand {;"parent" [:one] TODO fix this
+                                                                      ;"children" [:many] TODO fix this
+                                                                      "organization" [:one :program/organization]}}
    "/programs/{programId}/courses"                    {:ooapi/cardinality :many
                                                        :ooapi/datatype :course
                                                        :ooapi/q-fields #{:name :abbreviation :description}

@@ -4,6 +4,7 @@
     [cheshire.generate :as jsong]
     [clojure.instant :refer [read-instant-date]]
     [clojure.string :as str]
+    [clojure.set :refer [rename-keys]]
     [integrant.core :as ig]
     [io.pedestal.log :as log]
     [instant-ooapi.data :refer [data routes]]
@@ -176,9 +177,20 @@
                    (fn [c jsonGenerator]
                      (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssXXX") (.getTime c)))))
 
+(defn is-ref?
+  [v]
+  (and (vector? v)
+       (qualified-keyword? (first v))
+       (uuid? (second v))))
+
+(defn clean-item
+  [item]
+  (->> item
+       (remove (fn [[_ v]] (is-ref? v)))
+       (into {})))
+
 (defn many-handler
   [req]
-  (tap> req)
   (let [page-size (get-in req [:query-params :pageSize])
         page-number (get-in req [:query-params :pageNumber] 1)
         items (get-items req)]
@@ -187,16 +199,73 @@
      :items (->> items
                  (apply-select req)
                  (apply-filters req)
-                 (apply-pagination page-size page-number))}))
+                 (apply-pagination page-size page-number)
+                 (map clean-item))}))
 
-(defn one-handler
+(defn req->expands
+  [req]
+  (-> req ring/get-match :data :ooapi/expand))
+
+(defn get-ref
+  [[attr id]]
+  (let [datatype (keyword (namespace attr))
+        items (get data datatype)
+        indexed-items (common/index-by attr items)]
+    (get indexed-items id)))
+
+(defn apply-expand
+  [item {:keys [query-params] :as req}]
+  (let [expands (req->expands req)
+        to-expand (set (:expand query-params))
+        expand (fn [item [exp [cardinality attrs rename]]]
+                 (let [attr (if (vector? attrs) ; select the right attr by testing which are in the entity
+                              (->> attrs (filter #(contains? item %)) first)
+                              attrs)]
+                   (if (contains? to-expand exp)
+                     (let [ref (get item attr)
+                           expanded-item (clean-item (get-ref ref))]
+                       (cond-> item
+                         true (assoc attr expanded-item)
+                         (= cardinality :many) (assoc attr [expanded-item]) ; TODO this is a hack because we have no many-many relations between courses and programmes yet
+                         rename (rename-keys {attr rename})))
+                     (dissoc item attr))))]
+    (reduce expand item expands)))
+
+(defn get-item-in-one
   [req]
   (let [id-path (req->id-path req)
-        id-attr (keyword (name (req->datatype req))
+        datatype (req->datatype req)
+        id-attr (keyword (name datatype)
                          (name (last id-path)))
         id (req->id req)
         indexed-items (common/index-by id-attr (get-items req))]
     (get indexed-items id)))
+
+(defn get-item-in-many
+  [req]
+  (let [id-path (req->id-path req)
+        id (req->id req)
+        datatypes (req->datatype req)]
+    (first
+      (remove nil?
+        (for [datatype datatypes]
+          (let [items (get data datatype)
+                id-attr (keyword (name datatype)
+                                 (name (last id-path)))
+                indexed-items (common/index-by id-attr items)]
+            (get indexed-items id)))))))
+
+(defn get-item
+  [req]
+  (let [datatype (req->datatype req)]
+    (if (vector? datatype)
+      (get-item-in-many req)
+      (get-item-in-one req))))
+
+(defn one-handler
+  [req]
+  (-> (get-item req)
+      (apply-expand req)))
 
 (defn handler
   [req]
