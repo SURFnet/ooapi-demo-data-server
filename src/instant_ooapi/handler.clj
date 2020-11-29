@@ -28,7 +28,7 @@
             (nil? value)               nil
             :else                      (Integer/parseInt value))]
     (if enum
-      ((set enum) i)
+      ((set enum) i) ; TODO add error here if not part of enum
       i)))
 
 (defmulti parse-string (fn [format _] format))
@@ -40,7 +40,8 @@
 
 (defmethod parse-string "date"
   [_ s]
-  (read-instant-date s))
+  (when s
+    (read-instant-date s)))
 
 (defmethod coerce-parameter "string"
   [{:keys [enum format default]} value]
@@ -112,15 +113,34 @@
   (let [id-path (req->id-path req)]
     (get-in req id-path)))
 
-; [x] 1 apply filters
-; [ ] 2 apply datetime filters
-; [ ] 3 apply q
-; [ ] 4 sort
-; [x] 5 pagination
-
 (defn combine-kw
   [k1 k2]
   (keyword (name k1) (name k2)))
+
+(defn req->select-refs
+  [req]
+  (-> req ring/get-match :data :ooapi/select :refs))
+
+(defn req->select-path
+  [req]
+  (-> req ring/get-match :data :ooapi/select :path))
+
+(defn apply-select
+  [req items]
+  (let [select-path (req->select-path req)
+        select-id (get-in req select-path)
+        select-refs (req->select-refs req)
+        selected? (fn [item]
+                    (contains?
+                      (->> (select-keys item select-refs)
+                           (vals)
+                           (map second)
+                           (remove nil?)
+                           (into #{}))
+                      select-id))]
+    (if select-path
+      (filter selected? items)
+      items)))
 
 (defn req->filters
   [{:keys [query-params] :as req}]
@@ -129,6 +149,7 @@
     (->> filters
          (select-keys query-params)
          (map (fn [[k v]] [(combine-kw datatype k) v])))))
+         ; TODO fix filters now that datatype can be a vector
 
 (defn apply-filters
   [req items]
@@ -164,6 +185,7 @@
     {:pageSize page-size
      :pageNumber page-number
      :items (->> items
+                 (apply-select req)
                  (apply-filters req)
                  (apply-pagination page-size page-number))}))
 

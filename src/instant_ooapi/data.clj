@@ -39,15 +39,24 @@
 
 (def route-data
   {"/associations/{associationId}"                    {:ooapi/cardinality :one
-                                                       :ooapi/datatype [:programAssociation :courseAssociation]}
+                                                       :ooapi/id-path [:path-params :associationId]
+                                                       :ooapi/datatype [:programAssociation :courseAssociation]
+                                                       :ooapi/expand #{:persons :offering}}
 
    "/academic-sessions"                               {:ooapi/cardinality :many
-                                                       :ooapi/datatype :academicSession}
+                                                       :ooapi/datatype :academicSession ; TODO requires special filter to filter by parent and year
+                                                       :ooapi/sort #{"startDate" "academicSessionId" "name"}}
    "/academic-sessions/{academicSessionId}"           {:ooapi/cardinality :one
                                                        :ooapi/datatype :academicSession
-                                                       :ooapi/id-path [:path-params :academicSessionId]}
+                                                       :ooapi/id-path [:path-params :academicSessionId]
+                                                       :ooapi/expand #{:parent :year}}
    "/academic-sessions/{academicSessionId}/offerings" {:ooapi/cardinality :many
-                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
+                                                       :ooapi/datatype [:programOffering :courseOffering]
+                                                       :ooapi/filters #{:type :mainLanguage :isLineItem}
+                                                       :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
+                                                       :ooapi/q-fields #{:name :abbreviation :description}
+                                                       :ooapi/select {:refs #{:programOffering/academicSession :courseOffering/academicSession}
+                                                                      :path [:path-params :academicSessionId]}}
 
    "/courses"                                         {:ooapi/cardinality :many
                                                        :ooapi/datatype :course
@@ -56,30 +65,59 @@
                                                        :ooapi/sort #{"name" "ects" "courseId"}}
    "/courses/{courseId}"                              {:ooapi/cardinality :one
                                                        :ooapi/datatype :course
-                                                       :ooapi/id-path [:path-params :courseId]}
-   "/courses/{courseId}/offerings"                    {:ooapi/cardinality :many
-                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
+                                                       :ooapi/id-path [:path-params :courseId]
+                                                       :ooapi/expand #{:programs :coordinator :organization}} ; TODO expand might need a map structure here as well
+   "/courses/{courseId}/offerings"                    {:ooapi/cardinality :many ; TODO: add filters for since and until
+                                                       :ooapi/datatype :courseOffering
+                                                       :ooapi/filters #{:mainLanguage :modeOfStudy :isLineItem}
+                                                       :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
+                                                       :ooapi/select {:refs #{:courseOffering/course}
+                                                                      :path [:path-params :courseId]}}
 
    "/offerings/{offeringId}"                          {:ooapi/cardinality :one
-                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
+                                                       :ooapi/id-path [:path-params :offeringId]
+                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]
+                                                       :ooapi/expand #{"program" "programOffering" "course" "courseOffering" "organization" "academicSession"}}
 
    "/persons"                                         {:ooapi/cardinality :many
-                                                       :ooapi/datatype :person}
+                                                       :ooapi/datatype :person
+                                                       :ooapi/filters #{:affiliations}
+                                                       :ooapi/sort #{"personId" "givenName" "surName" "displayName"}}
    "/persons/{personId}"                              {:ooapi/cardinality :one
                                                        :ooapi/datatype :person
                                                        :ooapi/id-path [:path-params :personId]}
    "/persons/{personId}/associations"                 {:ooapi/cardinality :many
-                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]}
+                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]
+                                                       :ooapi/filters #{:type :role :state :result-state}
+                                                       :ooapi/sort #{"associationId"}
+                                                       :ooapi/select {:refs #{:courseOfferingAssociation/person
+                                                                              :programOfferingAssociation/person}
+                                                                      :path [:path-params :personId]}}
 
    "/programs"                                        {:ooapi/cardinality :many
-                                                       :ooapi/datatype :program}
+                                                       :ooapi/datatype :program
+                                                       :ooapi/q-fields #{:name :abbreviation :description}
+                                                       :ooapi/filters #{:type :qualificationAwarded :levelOfQualification :sector :fieldsOfStudy :crohoCreboCode}
+                                                       :ooapi/sort #{"programId" "name" "ects"}}
    "/programs/{programId}"                            {:ooapi/cardinality :one
                                                        :ooapi/datatype :program
-                                                       :ooapi/id-path [:path-params :programId]}
+                                                       :ooapi/id-path [:path-params :programId]
+                                                       :ooapi/expand #{"parent" "children" "organization"}}
    "/programs/{programId}/courses"                    {:ooapi/cardinality :many
-                                                       :ooapi/datatype :course}
-   "/programs/{programId}/offerings"                  {:ooapi/cardinality :many
-                                                       :ooapi/datatype :programOffering}})
+                                                       :ooapi/datatype :course
+                                                       :ooapi/q-fields #{:name :abbreviation :description}
+                                                       :ooapi/filters  #{:level :modeOfDelivery}
+                                                       :ooapi/sort #{"courseId" "name" "ects"}
+                                                       :ooapi/select {:refs #{:course/program}
+                                                                      :path [:path-params :programId]}}
+   "/programs/{programId}/offerings"                  {:ooapi/cardinality :many ; TODO add date filters
+                                                       :ooapi/datatype :programOffering
+                                                       :ooapi/q-fields #{:name :abbreviation :description}
+                                                       :ooapi/filters #{:mainLanguage :modeOfStudy :isLineItem}
+                                                       :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
+                                                       :ooapi/select {:refs #{:programOffering/program}
+                                                                      :path [:path-params :programId]}}})
+
 (defn build-routes
   [schema]
   (for [[path methods] (:paths schema)]
