@@ -4,7 +4,8 @@
     [clojure.edn :as edn]
     [clojure.string :as str]
     [nl.surf.demo-data.config :as config]
-    [nl.surf.demo-data.world :as world]))
+    [nl.surf.demo-data.world :as world]
+    [clojure.java.io :as io]))
 
 (defmethod config/generator "minus" [_]
   (fn minus [_ & xs]
@@ -22,19 +23,21 @@
 ; TODO fix keywordizing. Probably need to decode without keywordizing and keywordize manually using clojure.walk.
 (defn generate-data
   []
-  (-> "resources/schema.edn"
+  (-> "schema.edn"
+      (io/resource)
       (slurp)
       (edn/read-string)
       (json/generate-string)
       (json/decode true)
       (config/load)
-      (world/gen (-> "resources/pop.edn"
+      (world/gen (-> "pop.edn"
+                     (io/resource)
                      (slurp)
                      (edn/read-string)))))
 
 (def data (generate-data))
 
-(def schema (json/parse-string (slurp "resources/ooapiv4.json")
+(def schema (json/parse-string (slurp (io/resource "ooapiv4.json"))
                                #(if (str/starts-with? % "/") % (keyword %))))
 
 (def route-data

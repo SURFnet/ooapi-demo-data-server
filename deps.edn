@@ -1,15 +1,15 @@
 {:paths ["resources" "src"]
 
  :deps {org.clojure/clojure                {:mvn/version "1.10.1"}
-        clj-http/clj-http                  {:mvn/version "3.10.2"}
         cheshire/cheshire                  {:mvn/version "5.10.0"}
 
         aero/aero                          {:mvn/version "1.1.6"}
         integrant/integrant                {:mvn/version "0.8.0"}
 
         http-kit/http-kit                  {:mvn/version "2.5.0"}
-        metosin/reitit                     {:mvn/version "0.5.10"}
-        ring/ring                          {:mvn/version "1.8.1"}
+        metosin/reitit-core                {:mvn/version "0.5.10"}
+        metosin/reitit-ring                {:mvn/version "0.5.10"}
+        metosin/reitit-middleware          {:mvn/version "0.5.10"}
 
         nl.surf/demo-data                  {:mvn/version "1.0.1"}
 
@@ -23,4 +23,7 @@
 
  :aliases {:dev      {:extra-paths ["dev"]
                       :extra-deps {mvxcvi/puget                 {:mvn/version "1.1.2"}
-                                   integrant/repl               {:mvn/version "0.3.2"}}}}}
+                                   integrant/repl               {:mvn/version "0.3.2"}}}
+           :depstar {:extra-deps {seancorfield/depstar {:mvn/version "1.1.136"}}
+                     :ns-default hf.depstar
+                     :exec-args {}}}}
