@@ -41,7 +41,10 @@
                                #(if (str/starts-with? % "/") % (keyword %))))
 
 (def route-data
-  {"/associations/{associationId}"                    {:ooapi/cardinality :one
+  {"/"                                                {:ooapi/cardinality :singleton
+                                                       :ooapi/datatype :service}
+
+   "/associations/{associationId}"                    {:ooapi/cardinality :one
                                                        :ooapi/id-path [:path-params :associationId]
                                                        :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]
                                                        :ooapi/expand {"person" [:one [:programOfferingAssociation/person :courseOfferingAssociation/person]]

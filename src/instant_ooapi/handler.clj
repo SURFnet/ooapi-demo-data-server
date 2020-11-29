@@ -267,6 +267,11 @@
   (-> (get-item req)
       (apply-expand req)))
 
+(defn singleton-handler
+  [req]
+  (let [datatype (req->datatype req)]
+    (first (get data datatype))))
+
 (defn handler
   [req]
   (let [parsed-req (-> req coerce-query-parameters coerce-path-parameters)
@@ -274,6 +279,7 @@
         result (case cardinality
                  :many (many-handler parsed-req)
                  :one (one-handler parsed-req)
+                 :singleton (singleton-handler parsed-req)
                  {:status 501
                   :body "Not yet able to handle this request"})]
     {:status 200
