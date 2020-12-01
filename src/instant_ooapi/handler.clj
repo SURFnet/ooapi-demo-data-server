@@ -280,11 +280,15 @@
                  :many (many-handler parsed-req)
                  :one (one-handler parsed-req)
                  :singleton (singleton-handler parsed-req)
-                 {:status 501
-                  :body "Not yet able to handle this request"})]
-    {:status 200
-     :headers {"Content-Type" "application/json"}
-     :body (json/encode result {:key-fn name})}))
+                 :error)]
+    (cond
+      (= :error result) {:status 501
+                         :body "Can't handle request"}
+      (nil? result)     {:status 404
+                         :body "Not found"}
+      :else             {:status 200
+                         :headers {"Content-Type" "application/json"}
+                         :body (json/encode result {:key-fn name})})))
 
 (defn router
   []
