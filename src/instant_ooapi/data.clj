@@ -132,7 +132,32 @@
                                                        :ooapi/filters #{:mainLanguage :modeOfStudy :isLineItem}
                                                        :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
                                                        :ooapi/select {:refs #{:programOffering/program}
-                                                                      :path [:path-params :programId]}}})
+                                                                      :path [:path-params :programId]}}
+
+   "/organizations"                                   {:ooapi/cardinality :many
+                                                       :ooapi/datatype :organization
+                                                       :ooapi/filters #{:type}}
+   "/organizations/{organizationId}"                  {:ooapi/cardinality :one
+                                                       :ooapi/datatype :organization
+                                                       :ooapi/id-path [:path-params :organizationId]}
+                                                       ;:ooapi/expand {}}
+   "/organizations/{organizationId}/programs"         {:ooapi/cardinality :many
+                                                       :ooapi/datatype :program
+                                                       :ooapi/filters #{:type :qualificationAwarded :levelOfQualification :sector :fieldsOfStudy :crohoCreboCode}
+                                                       :ooapi/select {:refs #{:program/organization}
+                                                                      :path [:path-params :organizationId]}}
+   "/organizations/{organizationId}/courses"          {:ooapi/cardinality :many
+                                                       :ooapi/datatype :course
+                                                       :ooapi/filters #{:level :modeOfDelivery}
+                                                       :ooapi/select {:refs #{:course/organization}
+                                                                      :path [:path-params :organizationId]}}
+   "/organizations/{organizationId}/offerings"        {:ooapi/cardinality :many
+                                                       :ooapi/datatype [:programOffering :courseOffering]
+                                                       :ooapi/filters #{:type :mainLanguage :isLineItem}
+                                                       :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
+                                                       :ooapi/q-fields #{:name :abbreviation :description}}})
+                                                       ;:ooapi/select {:refs #{:programOffering/academicSession :courseOffering/academicSession}
+                                                       ;               :path [:path-params :organizationId]}}})
 
 (defn build-routes
   [schema]
