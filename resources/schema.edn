@@ -150,7 +150,7 @@
    :attributes {:description {:generator [:lorum-ipsum]}
                 :requirements {:generator [:lorum-ipsum]}
                 :enrollment {:generator [:lorum-ipsum]}
-                :modeOfDelivery {:generator [:one-of ["distance-learning" "on campus" "online" "hybrid" "situated"]]}
+                :modeOfDelivery {:generator [:at-least-one-of ["distance-learning" "on campus" "online" "hybrid" "situated"]]}
                 :_nameFormat {:hidden true
                               :generator [:one-of ["Inleiding tot %s" "Geschiedenis van de %s" "Filosofie van %s" "Psychologie van de %s" "Wiskunde van de %s"
                                                    "Macro %s" "Micro %s" "%s in de praktijk" "%s in de vorige eeuw" "%s van de toekomst" "%s voor gevorderden"]]}

@@ -1,11 +1,12 @@
 (ns instant-ooapi.data
   (:require
     [cheshire.core :as json]
+    [clojure.data.generators :as gen]
     [clojure.edn :as edn]
+    [clojure.java.io :as io]
     [clojure.string :as str]
     [nl.surf.demo-data.config :as config]
-    [nl.surf.demo-data.world :as world]
-    [clojure.java.io :as io]))
+    [nl.surf.demo-data.world :as world]))
 
 (defmethod config/generator "minus" [_]
   (fn minus [_ & xs]
@@ -19,6 +20,12 @@
           str/trim
           (str/replace #"[^a-z0-9]+" "-")
           (str (when (> world/*retry-attempt-nr* 0) world/*retry-attempt-nr*))))))
+
+(defmethod config/generator "at-least-one-of" [_]
+  (fn at-least-one-of [_ xs]
+    (when (seq xs)
+      (let [n (gen/uniform 1 (count xs))]
+        (take n (gen/shuffle xs))))))
 
 ; TODO fix keywordizing. Probably need to decode without keywordizing and keywordize manually using clojure.walk.
 (defn generate-data
