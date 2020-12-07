@@ -213,6 +213,7 @@
         "deps": ["program/name"]
       },
       "_crohoCreboCodeCategory": {
+        "hidden": true,
         "generator": ["one-of", ["Economie", "Gezondheidszorg", "Gedrag & Maatschappij", "Landbouw & Natuurlijke omgeving", "Natuur", "Onderwijs", "Taal & Cultuur", "Recht", "Techniek", "Sectoroverstijgend"]]
       },
       "fieldsOfStudy": {
