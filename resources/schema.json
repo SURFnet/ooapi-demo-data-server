@@ -209,6 +209,10 @@
         "generator": "lorum-ipsum"
       },
       "crohoCreboCode": {
+        "generator": ["one-of-keyed-resource", "seeds/crohocode.yml"],
+        "deps": ["program/name"]
+      },
+      "_crohoCreboCodeCategory": {
         "generator": ["one-of", ["Economie", "Gezondheidszorg", "Gedrag & Maatschappij", "Landbouw & Natuurlijke omgeving", "Natuur", "Onderwijs", "Taal & Cultuur", "Recht", "Techniek", "Sectoroverstijgend"]]
       },
       "fieldsOfStudy": {
@@ -216,7 +220,7 @@
       },
       "name": {
         "generator": ["one-of-keyed-resource", "seeds/programme-names.yml"],
-        "deps": ["program/crohoCreboCode"]
+        "deps": ["program/_crohoCreboCodeCategory"]
       },
       "sector": {
         "generator": ["one-of", ["secondary vocational education", "higher professional education", "university education"]]
@@ -353,7 +357,7 @@
         "hidden": true,
         "generator": ["one-of-keyed-resource", "seeds/programme-names.yml"],
         "deps": [
-          ["course/program", "program/crohoCreboCode"]
+          ["course/program", "program/_crohoCreboCodeCategory"]
         ]
       }
     }
