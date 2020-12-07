@@ -30,13 +30,10 @@
 ; TODO fix keywordizing. Probably need to decode without keywordizing and keywordize manually using clojure.walk.
 (defn generate-data
   []
-  (-> "schema.edn"
+  (-> "schema.json"
       (io/resource)
       (slurp)
-      (edn/read-string)
-      (json/generate-string)
-      (json/decode true)
-      (config/load)
+      (config/load-json)
       (world/gen (-> "pop.edn"
                      (io/resource)
                      (slurp)
