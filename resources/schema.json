@@ -26,9 +26,14 @@
         "hidden": true,
         "generator": ["char", "0", "9"]
       },
-      "addresses": {
+      "_address": {
+        "hidden": true,
         "generator": ["object", "type", "street", "streetNumber", "additional", "postalCode", "city", "countryCode", "geoLocation"],
         "deps": ["organization/_addressType", "organization/_addressStreet", "organization/_addressStreetNumber", "organization/_addressAdditional", "organization/_addressPostalCode", "organization/_addressCity", "organization/_addressCountryCode", "organization/_addressGeoLocation"]
+      },
+      "addresses": {
+        "generator": ["arrayize"],
+        "deps": ["organization/_address"]
       },
       "brin": {
         "generator": ["format", "%c%c%c%c"],

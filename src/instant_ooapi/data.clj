@@ -27,6 +27,10 @@
       (let [n (gen/uniform 1 (count xs))]
         (take n (gen/shuffle xs))))))
 
+(defmethod config/generator "arrayize" [_]
+  (fn arrayize [_ x]
+    (when x [x])))
+
 (defn generate-data
   []
   (-> "schema.json"
