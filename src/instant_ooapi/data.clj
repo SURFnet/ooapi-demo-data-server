@@ -90,7 +90,7 @@
 
    "/offerings/{offeringId}"                          {:ooapi/cardinality :one
                                                        :ooapi/id-path [:path-params :offeringId]
-                                                       :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]
+                                                       :ooapi/datatype [:programOffering :courseOffering]
                                                        :ooapi/expand {"program" [:one :programOffering/program]
                                                                       ;"programOffering" [:one] TODO fix this
                                                                       "course" [:one :courseOffering/course]
