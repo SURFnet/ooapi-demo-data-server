@@ -66,7 +66,8 @@
                                                        :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
                                                        :ooapi/q-fields #{:name :abbreviation :description}
                                                        :ooapi/select {:refs #{:programOffering/academicSession :courseOffering/academicSession}
-                                                                      :path [:path-params :academicSessionId]}}
+                                                                      :path [:path-params :academicSessionId]}
+                                                       :ooapi/expands #{:courseOffering/academicSession :programOffering/academicSession}}
 
    "/courses"                                         {:ooapi/cardinality :many
                                                        :ooapi/datatype :course

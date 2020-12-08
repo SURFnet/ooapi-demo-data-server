@@ -4,7 +4,7 @@
     [cheshire.generate :as jsong]
     [clojure.instant :refer [read-instant-date]]
     [clojure.string :as str]
-    [clojure.set :refer [rename-keys]]
+    [clojure.set :refer [rename-keys intersection]]
     [integrant.core :as ig]
     [io.pedestal.log :as log]
     [instant-ooapi.data :refer [data routes]]
@@ -189,6 +189,35 @@
        (remove (fn [[_ v]] (is-ref? v)))
        (into {})))
 
+(defn get-ref
+  [[attr id]]
+  (let [datatype (keyword (namespace attr))
+        items (get data datatype)
+        indexed-items (common/index-by attr items)]
+    (get indexed-items id)))
+
+(defn req->expands
+  [req]
+  (-> req ring/get-match :data :ooapi/expands))
+
+(defn expand-item
+  [expands item]
+  (let [attrs (intersection (->> item keys (into #{}))
+                            expands)
+        f (fn [m attr v]
+            (if (contains? attrs attr)
+              (assoc m attr (get-ref v))
+              (assoc m attr v)))]
+    (reduce-kv f {} item)))
+
+(defn apply-expands
+  [req items]
+  (let [expands (req->expands req)]
+    (if expands
+      (map (partial expand-item expands) items)
+      items)))
+
+
 (defn many-handler
   [req]
   (let [page-size (get-in req [:query-params :pageSize])
@@ -200,22 +229,16 @@
                  (apply-select req)
                  (apply-filters req)
                  (apply-pagination page-size page-number)
+                 (apply-expands req)
                  (map clean-item))}))
 
-(defn req->expands
+(defn req->expand
   [req]
   (-> req ring/get-match :data :ooapi/expand))
 
-(defn get-ref
-  [[attr id]]
-  (let [datatype (keyword (namespace attr))
-        items (get data datatype)
-        indexed-items (common/index-by attr items)]
-    (get indexed-items id)))
-
 (defn apply-expand
   [item {:keys [query-params] :as req}]
-  (let [expands (req->expands req)
+  (let [expands (req->expand req)
         to-expand (set (:expand query-params))
         expand (fn [item [exp [cardinality attrs rename]]]
                  (let [attr (if (vector? attrs) ; select the right attr by testing which are in the entity
