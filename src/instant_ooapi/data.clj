@@ -137,7 +137,8 @@
                                                        :ooapi/filters #{:mainLanguage :modeOfStudy :isLineItem}
                                                        :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
                                                        :ooapi/select {:refs #{:programOffering/program}
-                                                                      :path [:path-params :programId]}}
+                                                                      :path [:path-params :programId]}
+                                                       :ooapi/expands #{:programOffering/academicSession}}
 
    "/organizations"                                   {:ooapi/cardinality :many
                                                        :ooapi/datatype :organization
@@ -160,7 +161,8 @@
                                                        :ooapi/datatype [:programOffering :courseOffering]
                                                        :ooapi/filters #{:type :mainLanguage :isLineItem}
                                                        :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
-                                                       :ooapi/q-fields #{:name :abbreviation :description}}})
+                                                       :ooapi/q-fields #{:name :abbreviation :description}
+                                                       :ooapi/expands #{:programOffering/academicSession :courseOffering/academicSession}}})
                                                        ;:ooapi/select {:refs #{:programOffering/academicSession :courseOffering/academicSession}
                                                        ;               :path [:path-params :organizationId]}}})
 
