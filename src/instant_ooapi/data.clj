@@ -27,7 +27,6 @@
       (let [n (gen/uniform 1 (count xs))]
         (take n (gen/shuffle xs))))))
 
-; TODO fix keywordizing. Probably need to decode without keywordizing and keywordize manually using clojure.walk.
 (defn generate-data
   []
   (-> "schema.json"
