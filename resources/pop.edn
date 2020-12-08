@@ -2,9 +2,9 @@
  :organization 10
  :academicSession 5
  :program 10
- :programOffering 15
+ :programOffering 30
  :programOfferingAssociation 50
  :course 40
- :courseOffering 50
+ :courseOffering 120
  :courseOfferingAssociation 100
  :person 200}
