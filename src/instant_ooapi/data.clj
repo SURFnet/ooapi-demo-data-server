@@ -85,7 +85,8 @@
                                                        :ooapi/filters #{:mainLanguage :modeOfStudy :isLineItem}
                                                        :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
                                                        :ooapi/select {:refs #{:courseOffering/course}
-                                                                      :path [:path-params :courseId]}}
+                                                                      :path [:path-params :courseId]}
+                                                       :ooapi/expands #{:courseOffering/academicSession}}
 
    "/offerings/{offeringId}"                          {:ooapi/cardinality :one
                                                        :ooapi/id-path [:path-params :offeringId]
