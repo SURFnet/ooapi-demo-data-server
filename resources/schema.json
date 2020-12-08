@@ -684,7 +684,7 @@
         "generator": ["date", "2000-01-01", "2020-01-01"]
       },
       "type": {
-        "value": "programOfferingAssociation"
+        "value": "programOffering"
       },
       "state": {
         "generator": ["one-of", ["pending", "canceled", "denied", "associated"]]
@@ -761,7 +761,7 @@
         "generator": ["date", "2000-01-01", "2020-01-01"]
       },
       "type": {
-        "value": "courseOfferingAssociation"
+        "value": "courseOffering"
       },
       "state": {
         "generator": ["one-of", ["pending", "canceled", "denied", "associated"]]
