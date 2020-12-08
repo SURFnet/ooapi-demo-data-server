@@ -175,7 +175,7 @@
 
 (jsong/add-encoder java.util.GregorianCalendar
                    (fn [c jsonGenerator]
-                     (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssXXX") (.getTime c)))))
+                     (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") (.getTime c)))))
 
 (defn is-ref?
   [v]
