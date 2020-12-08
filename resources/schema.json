@@ -263,7 +263,7 @@
         "generator": ["lorum-ipsum"]
       },
       "learningOutcomes": {
-        "generator": ["lorum-ipsum"]
+        "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]]
       },
       "admissionRequirements": {
         "generator": "lorum-ipsum"
@@ -341,7 +341,7 @@
         ]
       },
       "learningOutcomes": {
-        "generator": ["lorum-ipsum"]
+        "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]]
       },
       "resources": {
         "generator": ["lorum-ipsum"]
