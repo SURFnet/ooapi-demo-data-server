@@ -31,6 +31,28 @@
   (fn arrayize [_ x]
     (when x [x])))
 
+(defn modify-org-hack
+  "Very ugly hack to make sure there is one root organization
+  which has the env variables ORGNAME and SHORTORGNAME as its
+  name and shortName."
+  [data]
+  (let [org-name (or (System/getenv "ORGNAME") "RootOrganisatie")
+        short-org-name (or (System/getenv "SHORTORGNAME") "RO")
+        is-root? (comp #{"root"} :organization/type)
+        root-orgs (->> data :organization (filter is-root?))
+        root (-> (first root-orgs)
+                 (assoc :organization/name org-name)
+                 (assoc :organization/shortName short-org-name))
+        rest-orgs (->> (rest root-orgs)
+                       (map #(assoc % :organization/type "department")))
+        orgs (->> data
+                  :organization
+                  (remove is-root?)
+                  (concat [root])
+                  (concat rest-orgs)
+                  vec)]
+    (assoc data :organization orgs)))
+
 (defn generate-data
   []
   (-> "schema.json"
@@ -42,7 +64,7 @@
                      (slurp)
                      (edn/read-string)))))
 
-(def data (generate-data))
+(def data (modify-org-hack (generate-data)))
 
 (def schema (json/parse-string (slurp (io/resource "ooapiv4.json"))
                                #(if (str/starts-with? % "/") % (keyword %))))
