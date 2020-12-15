@@ -74,7 +74,7 @@
         "value": "NL"
       },
       "type": {
-        "generator": ["one-of", ["root", "institution", "department", "faculty"]]
+        "generator": ["one-of", ["root"]]
       },
       "_addressGeoLocation": {
         "hidden": true,
