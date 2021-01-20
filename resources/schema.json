@@ -241,11 +241,7 @@
         "generator": ["uuid"]
       },
       "ects": {
-        "generator": ["weighted", {
-          "30": 2,
-          "60": 3,
-          "180": 1
-        }]
+        "generator": ["int-cubic", 30, 180]
       },
       "lengthOfProgam": {
         "hidden": true,
@@ -326,18 +322,7 @@
         "generator": ["one-of", ["secondary vocational education 3", "secondary vocational education 4", "associate degree", "bachelor", "master", "doctoral"]]
       },
       "ects": {
-        "generator": ["weighted", {
-          "7.5": 2,
-          "24": 3,
-          "15": 2,
-          "6": 4,
-          "3": 3,
-          "12": 4,
-          "9": 3,
-          "5": 1,
-          "10": 1,
-          "18": 3
-        }]
+        "generator": ["int-cubic", 2, 15]
       },
       "link": {
         "generator": ["format", "https://%s/courses/%s"],
@@ -700,18 +685,7 @@
       },
       "_resultEcts": {
         "hidden": true,
-        "generator": ["weighted", {
-          "7.5": 2,
-          "24": 3,
-          "15": 2,
-          "6": 4,
-          "3": 3,
-          "12": 4,
-          "9": 3,
-          "5": 1,
-          "10": 1,
-          "18": 3
-        }]
+        "generator": ["int-cubic", 2, 15]
       },
       "_resultScore": {
         "hidden": true,
@@ -777,18 +751,7 @@
       },
       "_resultEcts": {
         "hidden": true,
-        "generator": ["weighted", {
-          "7.5": 2,
-          "24": 3,
-          "15": 2,
-          "6": 4,
-          "3": 3,
-          "12": 4,
-          "9": 3,
-          "5": 1,
-          "10": 1,
-          "18": 3
-        }]
+        "generator": ["int-cubic", 2, 15]
       },
       "_resultScore": {
         "hidden": true,
