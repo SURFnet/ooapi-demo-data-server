@@ -6,7 +6,32 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [nl.surf.demo-data.config :as config]
-    [nl.surf.demo-data.world :as world]))
+    [nl.surf.demo-data.world :as world]
+    [remworks.markov-chain :as mc]))
+
+(def text-spaces (->> "seeds/data.edn"
+                      io/resource
+                      slurp
+                      read-string
+                      (map #(dissoc % :id :field-of-study))
+                      (reduce (fn [m x]
+                                (merge-with (fn [a b]
+                                              (let [b (str/replace (str b) #"<[^>]+>" "")]
+                                                (if (str/ends-with? a ".")
+                                                  (str a " " b)
+                                                  (str a ". " b))))
+                                            m x))
+                              {})
+                      (map (juxt (comp name key)
+                                 (comp mc/analyse-text val)))
+                      (into {})))
+
+(defmethod config/generator "lorem-surf" [_]
+  (fn surf-lorem [_ & [scope lines]]
+    (let [space (get text-spaces scope (get text-spaces "description"))]
+      (->> #(mc/generate-text space)
+           (repeatedly (or lines 3))
+           (str/join " ")))))
 
 (defmethod config/generator "minus" [_]
   (fn minus [_ & xs]

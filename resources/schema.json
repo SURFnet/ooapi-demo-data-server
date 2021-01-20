@@ -16,7 +16,7 @@
     "name": "organization",
     "attributes": {
       "description": {
-        "generator": ["lorum-ipsum"]
+        "generator": ["lorem-surf"]
       },
       "_oneCap1": {
         "hidden": true,
@@ -211,7 +211,7 @@
     },
     "attributes": {
       "description": {
-        "generator": "lorum-ipsum"
+        "generator": "lorem-surf"
       },
       "crohoCreboCode": {
         "generator": ["one-of-keyed-resource", "seeds/crohocode.yml"],
@@ -261,13 +261,13 @@
         ]
       },
       "profileOfProgram": {
-        "generator": ["lorum-ipsum"]
+        "generator": ["lorem-surf"]
       },
       "learningOutcomes": {
         "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]]
       },
       "admissionRequirements": {
-        "generator": "lorum-ipsum"
+        "generator": ["lorem-surf", "requirements"]
       },
       "abbreviation": {
         "generator": "abbreviate",
@@ -275,7 +275,7 @@
         "constraints": ["unique"]
       },
       "qualificationRequirements": {
-        "generator": "lorum-ipsum"
+        "generator": ["lorem-surf", "requirements"]
       }
     }
   }, {
@@ -296,13 +296,13 @@
     },
     "attributes": {
       "description": {
-        "generator": ["lorum-ipsum"]
+        "generator": ["lorem-surf"]
       },
       "requirements": {
-        "generator": ["lorum-ipsum"]
+        "generator": ["lorem-surf", "requirements"]
       },
       "enrollment": {
-        "generator": ["lorum-ipsum"]
+        "generator": ["lorem-surf", "enrollment"]
       },
       "modeOfDelivery": {
         "generator": ["at-least-one-of", ["distance-learning", "on campus", "online", "hybrid", "situated"]]
@@ -316,7 +316,7 @@
         "deps": ["course/_nameFormat", "course/_nameProgram"]
       },
       "assessment": {
-        "generator": ["lorum-ipsum"]
+        "generator": ["lorem-surf", "assessment"]
       },
       "level": {
         "generator": ["one-of", ["secondary vocational education 3", "secondary vocational education 4", "associate degree", "bachelor", "master", "doctoral"]]
@@ -334,7 +334,7 @@
         "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]]
       },
       "resources": {
-        "generator": ["lorum-ipsum"]
+        "generator": ["lorem-surf", "resources"]
       },
       "courseId": {
         "generator": ["uuid"]
@@ -709,7 +709,7 @@
       },
       "_resultComment": {
         "hidden": true,
-        "generator": ["lorum-ipsum"]
+        "generator": ["lorem-surf", "goals", 1]
       }
     }
   }, {
@@ -775,7 +775,7 @@
       },
       "_resultComment": {
         "hidden": true,
-        "generator": ["lorum-ipsum"]
+        "generator": ["lorem-surf", "goals", 1]
       }
     }
   }]
