@@ -350,6 +350,19 @@
         "deps": [
           ["course/program", "program/_crohoCreboCodeCategory"]
         ]
+      },
+      "_EWUUTheme": {
+        "hidden": true,
+        "generator": ["one-of", ["Behavioural Studies and Society", "Earth and Sustainability", "Health and Life Sciences", "Languages and Communication", "Law, Economics and Governance", "Media, Arts, Culture and History", "Multidisciplinary Studies", "Religion and Philosophy", "Science"]]
+      },
+      "_EWUUTargetGroup": {
+        "hidden": true,
+        "generator": ["object", "name", "theme", "EWUU"],
+        "deps": ["course/_EWUUTheme"]
+      },
+      "ext": {
+        "generator": ["object", "targetGroup"],
+        "deps": ["course/_EWUUTargetGroup"]
       }
     }
   }, {
