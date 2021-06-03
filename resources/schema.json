@@ -360,9 +360,14 @@
         "generator": ["object", "name", "theme", "EWUU"],
         "deps": ["course/_EWUUTheme"]
       },
+      "_EWUUTargetGroupArray": {
+        "hidden": true,
+        "generator": ["arrayize"],
+        "deps": ["course/_EWUUTargetGroup"]
+      },
       "ext": {
         "generator": ["object", "targetGroup"],
-        "deps": ["course/_EWUUTargetGroup"]
+        "deps": ["course/_EWUUTargetGroupArray"]
       }
     }
   }, {
