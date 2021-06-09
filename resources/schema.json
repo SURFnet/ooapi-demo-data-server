@@ -353,7 +353,7 @@
       },
       "_EWUUTheme": {
         "hidden": true,
-        "generator": ["one-of", ["Behavioural Studies and Society", "Earth and Sustainability", "Health and Life Sciences", "Languages and Communication", "Law, Economics and Governance", "Media, Arts, Culture and History", "Multidisciplinary Studies", "Religion and Philosophy", "Science"]]
+        "generator": ["one-of", ["Circular Society", "Preventive Health", "Educational Science", "Humanities and Arts", "Social Sciences, Business and Law", "Science", "Engineering, Manufacturing and Construction", "Agriculture", "Health and Welfare", "Services"]]
       },
       "_EWUUTargetGroup": {
         "hidden": true,
