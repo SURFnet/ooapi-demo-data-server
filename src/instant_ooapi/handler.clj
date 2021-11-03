@@ -313,6 +313,19 @@
                          :headers {"Content-Type" "application/json"}
                          :body (json/encode result {:key-fn name})})))
 
+(defn create-chaos-handler
+  [normal-handler modes]
+  (fn [req]
+    (let [mode (rand-nth modes)]
+      (case mode
+        :normal (normal-handler req)
+        :empty {:status 200
+                :headers {"Content-Type" "application/json"}
+                :body ""}
+        :slow (let [delay (+ 3000 (rand-int 60000))]
+                (Thread/sleep delay)
+                (normal-handler req))))))
+
 (defn router
   []
   (ring/router
@@ -321,11 +334,18 @@
     {:data {:middleware [parameters-middleware]}}))
 
 (defmethod ig/init-key ::app
-  [_ _]
-  (ring/ring-handler (router)
-                     handler
-                     {:inject-match? true
-                      :inject-router? false}))
+  [_ {:keys [chaos? chaos-modes]}]
+  (let [modes (->> (str/split chaos-modes #",")
+                   (map str/lower-case)
+                   (map keyword))
+        normal-handler (ring/ring-handler (router)
+                                          handler
+                                          {:inject-match? true
+                                           :inject-router? false})]
+    (when chaos? (log/warn :chaos? true :msg "ChAoS mode is on!" :modes modes))
+    (if chaos?
+      (create-chaos-handler normal-handler modes)
+      normal-handler)))
 
 
 ;(app {:request-method :get :uri "/courses"
