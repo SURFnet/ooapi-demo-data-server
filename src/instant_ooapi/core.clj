@@ -1,7 +1,7 @@
 (ns instant-ooapi.core
   (:require
     [instant-ooapi.system :as system]
-    [io.pedestal.log :as log]
+    [clojure.tools.logging :as log]
     [integrant.core :as ig]
     [clojure.data.generators]))
 

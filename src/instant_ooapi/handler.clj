@@ -6,7 +6,7 @@
     [clojure.string :as str]
     [clojure.set :refer [rename-keys intersection]]
     [integrant.core :as ig]
-    [io.pedestal.log :as log]
+    [clojure.tools.logging :as log]
     [instant-ooapi.data :refer [data routes]]
     [instant-ooapi.common :as common]
     [reitit.ring :as ring]

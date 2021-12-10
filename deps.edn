@@ -1,25 +1,25 @@
 {:paths ["resources" "src"]
 
- :deps {org.clojure/clojure                {:mvn/version "1.10.1"}
-        cheshire/cheshire                  {:mvn/version "5.10.0"}
+ :deps {org.clojure/clojure            {:mvn/version "1.10.1"}
+        cheshire/cheshire              {:mvn/version "5.10.0"}
 
-        aero/aero                          {:mvn/version "1.1.6"}
-        integrant/integrant                {:mvn/version "0.8.0"}
+        aero/aero                      {:mvn/version "1.1.6"}
+        integrant/integrant            {:mvn/version "0.8.0"}
 
-        http-kit/http-kit                  {:mvn/version "2.5.0"}
-        metosin/reitit-core                {:mvn/version "0.5.10"}
-        metosin/reitit-ring                {:mvn/version "0.5.10"}
-        metosin/reitit-middleware          {:mvn/version "0.5.10"}
+        http-kit/http-kit              {:mvn/version "2.5.0"}
+        metosin/reitit-core            {:mvn/version "0.5.10"}
+        metosin/reitit-ring            {:mvn/version "0.5.10"}
+        metosin/reitit-middleware      {:mvn/version "0.5.10"}
 
-        nl.surf/demo-data                  {:mvn/version "1.1.0"}
+        nl.surf/demo-data              {:mvn/version "1.1.0"}
 
-        io.pedestal/pedestal.log           {:mvn/version "0.5.8"}
-        org.slf4j/slf4j-api                {:mvn/version "1.7.30"}
-        org.slf4j/jul-to-slf4j             {:mvn/version "1.7.30"}
-        org.slf4j/jcl-over-slf4j           {:mvn/version "1.7.30"}
-        org.slf4j/log4j-over-slf4j         {:mvn/version "1.7.30"}
-        org.slf4j/osgi-over-slf4j          {:mvn/version "1.7.30"}
-        ch.qos.logback/logback-classic     {:mvn/version "1.2.3"}}
+        org.clojure/tools.logging      {:mvn/version "1.1.0"}
+        org.slf4j/slf4j-api            {:mvn/version "1.7.32"}
+        org.slf4j/jul-to-slf4j         {:mvn/version "1.7.32"}
+        org.slf4j/jcl-over-slf4j       {:mvn/version "1.7.32"}
+        org.slf4j/log4j-over-slf4j     {:mvn/version "1.7.32"}
+        org.slf4j/osgi-over-slf4j      {:mvn/version "1.7.32"}
+        ch.qos.logback/logback-classic {:mvn/version "1.2.7"}}
 
  :aliases {:dev      {:extra-paths ["dev"]
                       :extra-deps {mvxcvi/puget                 {:mvn/version "1.1.2"}
