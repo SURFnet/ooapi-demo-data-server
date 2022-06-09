@@ -1,8 +1,8 @@
 {:service 1
  :organization 1
  :academicSession 5
- :program 10
- :programOffering 30
+ :program 30
+ :programOffering 90
  :programOfferingAssociation 50
  :course 40
  :courseOffering 120
