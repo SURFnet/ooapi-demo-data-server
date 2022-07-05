@@ -78,9 +78,14 @@
                   vec)]
     (assoc data :organization orgs)))
 
+;; use ooapi version specific resource files
+(def ooapi-version (or (System/getenv "OOAPIVERSION") "v5"))
+(def schema-file (str "schema" ooapi-version ".json"))
+(def ooapi-file (str "ooapi" ooapi-version ".json"))
+
 (defn generate-data
   []
-  (-> "schema.json"
+  (-> schema-file
       (io/resource)
       (slurp)
       (config/load-json)
@@ -91,10 +96,10 @@
 
 (def data (modify-org-hack (generate-data)))
 
-(def schema (json/parse-string (slurp (io/resource "ooapiv4.json"))
+(def schema (json/parse-string (slurp (io/resource ooapi-file))
                                #(if (str/starts-with? % "/") % (keyword %))))
 
-(def route-data
+(def route-data-v4
   {"/"                                                {:ooapi/cardinality :singleton
                                                        :ooapi/datatype :service}
 
@@ -216,6 +221,15 @@
                                                        :ooapi/expands #{:programOffering/academicSession :courseOffering/academicSession}}})
                                                        ;:ooapi/select {:refs #{:programOffering/academicSession :courseOffering/academicSession}
                                                        ;               :path [:path-params :organizationId]}}})
+
+(def route-data-v5
+  {"/"                                                {:ooapi/cardinality :singleton
+                                                       :ooapi/datatype :service}})
+
+;; use ooapi version specific data
+(def route-data (case ooapi-version
+  "v4" route-data-v4
+  "v5" route-data-v5))
 
 (defn build-routes
   [schema]

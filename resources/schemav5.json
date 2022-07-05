@@ -1,0 +1,16 @@
+{
+  "types": [{
+    "name": "service",
+    "attributes": {
+      "contactEmail": {
+        "value": "jelmer.deronde@surf.nl"
+      },
+      "specification": {
+        "value": "https://open-education-api.github.io/specification/v5-rc/docs.html"
+      },
+      "documentation": {
+        "value": "https://open-education-api.github.io/specification/v5-rc/docs.html"
+      }
+    }
+  }]
+}
