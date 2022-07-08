@@ -67,6 +67,9 @@
                        (filter (set enum))
                        (into [])))))
 
+; HERMAN: in v5 parameter & parameter.schema kan een $ref zijn
+; use the script 'fixRefs.js' to get rid of those refs in the ooapiv5.json file
+; could probably be fixed here as well
 (defn req->param-schemas
   [req source]
   (->> req

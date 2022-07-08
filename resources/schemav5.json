@@ -12,5 +12,150 @@
         "value": "https://open-education-api.github.io/specification/v5-rc/docs.html"
       }
     }
+  }, {
+    "name": "organization",
+    "attributes": {
+      "organizationId": {
+        "generator": ["uuid"]
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code"],
+        "deps": ["organization/_codeType", "organization/_code"]
+      },
+      "organizationType": {
+        "generator": ["one-of", ["root"]]
+      },
+      "name": {
+        "generator": ["format", "%s van %s"],
+        "deps": ["organization/_nameType", "organization/_addressCity"]
+      },
+      "shortName": {
+        "generator": ["abbreviate"],
+        "deps": ["organization/name"],
+        "constraints": ["unique"]
+      },
+      "description": {
+        "generator": ["lorem-surf"]
+      },
+      "addresses": {
+        "generator": ["arrayize"],
+        "deps": ["organization/_address"]
+      },
+      "link": {
+        "generator": ["format", "https://%s/"],
+        "deps": ["organization/_linkDomain"]
+      },
+      "logo": {
+        "generator": ["format", "https://%s/images/logo.png"],
+        "deps": ["organization/_linkDomain"]
+      },
+      "otherCodes": {
+        "generator": ["arrayize"],
+        "deps": ["organization/_otherCode"]
+      },
+      "_oneCap1": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_oneInt": {
+        "hidden": true,
+        "generator": ["char", "0", "9"]
+      },
+      "_address": {
+        "hidden": true,
+        "generator": ["object", "addressType", "street", "streetNumber", "additional", "postalCode", "city", "countryCode", "geoLocation"],
+        "deps": ["organization/_addressType", "organization/_addressStreet", "organization/_addressStreetNumber", "organization/_addressAdditional", "organization/_addressPostalCode", "organization/_addressCity", "organization/_addressCountryCode", "organization/_addressGeoLocation"]
+      },
+      "_addressCity": {
+        "hidden": true,
+        "generator": ["one-of-resource-lines", "seeds/city-names.txt"]
+      },
+      "_addressPostalCode": {
+        "hidden": true,
+        "generator": ["format", "%d%c%c"],
+        "deps": ["organization/_fourInt", "organization/_oneCap3", "organization/_oneCap4"]
+      },
+      "_linkDomainBase": {
+        "hidden": true,
+        "generator": ["sanitize"],
+        "deps": ["organization/name"]
+      },
+      "_addressStreetNumber": {
+        "hidden": true,
+        "generator": ["int", 1, 200]
+      },
+      "_addressGeoLocationLon": {
+        "hidden": true,
+        "generator": ["int", 0, 180]
+      },
+      "_addressCountryCode": {
+        "hidden": true,
+        "value": "NL"
+      },
+      "_addressGeoLocation": {
+        "hidden": true,
+        "generator": ["object", "latitude", "longitude"],
+        "deps": ["organization/_addressGeoLocationLat", "organization/_addressGeoLocationLon"]
+      },
+      "_nameType": {
+        "hidden": true,
+        "generator": ["one-of", ["Universiteit", "Hogeschool", "Academie"]]
+      },
+      "_addressGeoLocationLat": {
+        "hidden": true,
+        "generator": ["int", 0, 85]
+      },
+      "_linkDomain": {
+        "hidden": true,
+        "generator": ["format", "%s.nl"],
+        "deps": ["organization/_linkDomainBase"]
+      },
+      "_fourInt": {
+        "hidden": true,
+        "generator": ["int", 1000, 9999]
+      },
+      "_oneCap2": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_addressType": {
+        "hidden": true,
+        "generator": ["one-of", ["postal", "visit", "deliveries"]]
+      },
+      "_oneCap3": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_oneChar": {
+        "hidden": true,
+        "generator": ["char", "a", "z"]
+      },
+      "_addressStreet": {
+        "hidden": true,
+        "generator": ["one-of-resource-lines", "seeds/street-names.txt"]
+      },
+      "_addressAdditional": {
+        "hidden": true,
+        "generator": ["one-of", ["", "a", "b"]]
+      },
+      "_oneCap4": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_otherCode": {
+        "hidden": true,
+        "generator": ["object", "codeType", "code"],
+        "deps": ["organization/_codeType", "organization/_code"]
+      },
+      "_codeType": {
+        "hidden": true,
+        "generator": ["one-of", ["brin"]]
+      },
+      "_code": {
+        "hidden": true,
+        "generator": ["format", "%c%c%c%c"],
+        "deps": ["organization/_oneInt", "organization/_oneChar", "organization/_oneCap1", "organization/_oneCap2"]
+      }
+    }
   }]
 }

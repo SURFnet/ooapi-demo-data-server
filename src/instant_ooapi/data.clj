@@ -224,7 +224,14 @@
 
 (def route-data-v5
   {"/"                                                {:ooapi/cardinality :singleton
-                                                       :ooapi/datatype :service}})
+                                                       :ooapi/datatype :service}
+   "/organizations"                                   {:ooapi/cardinality :many
+                                                       :ooapi/datatype :organization
+                                                       :ooapi/filters #{:organizationType}}
+   "/organizations/{organizationId}"                  {:ooapi/cardinality :one
+                                                       :ooapi/datatype :organization
+                                                       :ooapi/id-path [:path-params :organizationId]}
+                                                       })
 
 ;; use ooapi version specific data
 (def route-data (case ooapi-version
