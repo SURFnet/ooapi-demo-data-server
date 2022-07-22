@@ -1,4 +1,4 @@
-(ns instant-ooapi.handler
+(ns ooapi-demo-data-server.handler
   (:require
     [cheshire.core :as json]
     [cheshire.generate :as jsong]
@@ -7,8 +7,8 @@
     [clojure.set :refer [rename-keys intersection]]
     [integrant.core :as ig]
     [clojure.tools.logging :as log]
-    [instant-ooapi.data :refer [data routes]]
-    [instant-ooapi.common :as common]
+    [ooapi-demo-data-server.data :refer [data routes]]
+    [ooapi-demo-data-server.common :as common]
     [reitit.ring :as ring]
     [reitit.ring.middleware.dev]
     [reitit.ring.middleware.parameters :refer [parameters-middleware]]))

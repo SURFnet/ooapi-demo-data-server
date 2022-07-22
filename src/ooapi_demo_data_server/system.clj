@@ -1,4 +1,4 @@
-(ns instant-ooapi.system
+(ns ooapi-demo-data-server.system
   (:require
     [aero.core :as aero]
     [clojure.java.io :as io]

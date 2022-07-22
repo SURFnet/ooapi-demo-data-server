@@ -1,4 +1,4 @@
-(ns instant-ooapi.data
+(ns ooapi-demo-data-server.data
   (:require
     [cheshire.core :as json]
     [clojure.data.generators :as gen]
