@@ -1,5 +1,5 @@
-{:instant-ooapi.handler/app {:chaos? #boolean #env CHAOS
-                             :chaos-modes #or [#env CHAOS_MODES "normal,empty,slow"]}
+{:ooapi-demo-data-server.handler/app {:chaos? #boolean #env CHAOS
+                                      :chaos-modes #or [#env CHAOS_MODES "normal,empty,slow"]}
 
- :instant-ooapi.http/server {:settings {:port 8080}
-                             :handler #ig/ref :instant-ooapi.handler/app}}
+ :ooapi-demo-data-server.http/server {:settings {:port 8080}
+                                      :handler #ig/ref :ooapi-demo-data-server.handler/app}}

@@ -7,7 +7,7 @@
 
 (defn set-prep!
   []
-  ((jit integrant.repl/set-prep!) #((jit instant-ooapi.system/prep) :dev)))
+  ((jit integrant.repl/set-prep!) #((jit ooapi-demo-data-server.system/prep) :dev)))
 
 (defn go
   []

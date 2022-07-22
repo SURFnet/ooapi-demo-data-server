@@ -1,6 +1,6 @@
-(ns instant-ooapi.core
+(ns ooapi-demo-data-server.core
   (:require
-    [instant-ooapi.system :as system]
+    [ooapi-demo-data-server.system :as system]
     [clojure.tools.logging :as log]
     [integrant.core :as ig]
     [clojure.data.generators]))
@@ -14,9 +14,9 @@
 
 (defn -main
   [& _]
-  (log/info :instant-ooapi/starting {})
+  (log/info :ooapi-demo-data-server/starting {})
   (let [s (seed)
         system (binding [clojure.data.generators/*rnd* (java.util.Random. s)]
                  (ig/init (system/prep :prod)))]
-    (log/info :instant-ooapi/seed {:seed s})
+    (log/info :ooapi-demo-data-server/seed {:seed s})
     system))

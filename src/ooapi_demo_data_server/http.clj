@@ -1,4 +1,4 @@
-(ns instant-ooapi.http
+(ns ooapi-demo-data-server.http
   (:require
     [org.httpkit.server :as http]
     [integrant.core :as ig]))

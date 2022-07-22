@@ -1,4 +1,4 @@
-(ns instant-ooapi.common)
+(ns ooapi-demo-data-server.common)
 
 ; Copied from ghadi on Clojurians Slack
 (defn index-by
