@@ -10,11 +10,11 @@ OOAPI Demodata server is implemented in Clojure. There are two ways of building 
 ### Using Clojure and Java
 Make sure you have [Clojure installed](https://clojure.org/guides/install_clojure) and a recent version of Java. You can then run the following command:
 
-`clojure -X:depstar uberjar :jar ooapi-demo-data-server.jar`
+`clojure -T:build uberjar`
 
 This will generate a jar you can run using the following command:
 
-`java -cp ooapi-demo-data-server.jar clojure.main -m ooapi-demo-data-server.core`
+`java -jar target/ooapi-demo-data-server.jar`
 
 The server is now available on http://localhost:8080.
 

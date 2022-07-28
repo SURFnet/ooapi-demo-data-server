@@ -3,7 +3,8 @@
     [ooapi-demo-data-server.system :as system]
     [clojure.tools.logging :as log]
     [integrant.core :as ig]
-    [clojure.data.generators]))
+    [clojure.data.generators])
+  (:gen-class))
 
 (defn seed
   []

@@ -3,4 +3,4 @@
 .rebl
 .env
 .lsp
-ooapi-demo-data-server.jar
+target/
