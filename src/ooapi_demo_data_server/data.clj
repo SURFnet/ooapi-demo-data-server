@@ -1,18 +1,28 @@
 (ns ooapi-demo-data-server.data
   (:require
-    [cheshire.core :as json]
-    [clojure.data.generators :as gen]
-    [clojure.edn :as edn]
-    [clojure.java.io :as io]
-    [clojure.string :as str]
-    [nl.surf.demo-data.config :as config]
-    [nl.surf.demo-data.world :as world]
-    [remworks.markov-chain :as mc]))
+   [cheshire.core :as json]
+   [clojure.data.generators :as gen]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [nl.surf.demo-data.config :as config]
+   [nl.surf.demo-data.world :as world]
+   [remworks.markov-chain :as mc]
+   [ooapi-demo-data-server.language :as language]))
+
+;; use ooapi version specific resource files
+(def ooapi-version (or (System/getenv "OOAPI_VERSION") "v5"))
+
+(def schema-file (str ooapi-version "/schema.json"))
+
+(def ooapi-file (str ooapi-version "/ooapi.json"))
+
+(def pop-file (str ooapi-version "/pop.edn"))
 
 (def text-spaces (->> "seeds/data.edn"
                       io/resource
                       slurp
-                      read-string
+                      edn/read-string
                       (map #(dissoc % :id :field-of-study))
                       (reduce (fn [m x]
                                 (merge-with (fn [a b]
@@ -52,9 +62,34 @@
       (let [n (gen/uniform 1 (count xs))]
         (take n (gen/shuffle xs))))))
 
+(defmethod config/generator "array" [_]
+  (fn array [_ & xs]
+    (when (seq xs)
+      xs)))
+
 (defmethod config/generator "arrayize" [_]
   (fn arrayize [_ x]
     (when x [x])))
+
+(defn to-language-typed-string
+  [s]
+  (let [en {:language "en-GB"}
+        nl {:language "nl-NL"}
+        lang (language/detect s)]
+    (case lang
+      "eng" (vector (assoc en :value s)
+                    (assoc nl :value (str "NEDERLANDSE VERTALING:\n" s)))
+      "nl" (vector (assoc nl :value s)
+                   (assoc en :value (str "ENGLISH TRANSLATION:\n" s)))
+      (vector (assoc nl :value s)))))
+
+(defmethod config/generator "language-typed-string" [_]
+  (fn language-typed-string [_ s]
+    (to-language-typed-string s)))
+
+(defmethod config/generator "language-typed-strings" [_]
+  (fn language-typed-strings [_ strings]
+    (map to-language-typed-string strings)))
 
 (defn modify-org-hack
   "Very ugly hack to make sure there is one root organization
@@ -78,21 +113,18 @@
                   vec)]
     (assoc data :organization orgs)))
 
-;; use ooapi version specific resource files
-(def ooapi-version (or (System/getenv "OOAPIVERSION") "v5"))
-(def schema-file (str "schema" ooapi-version ".json"))
-(def ooapi-file (str "ooapi" ooapi-version ".json"))
-
 (defn generate-data
   []
   (-> schema-file
       (io/resource)
       (slurp)
       (config/load-json)
-      (world/gen (-> "pop.edn"
+      (world/gen (-> pop-file
                      (io/resource)
                      (slurp)
                      (edn/read-string)))))
+
+(:program (generate-data))
 
 (def data (modify-org-hack (generate-data)))
 
@@ -228,7 +260,7 @@
    "/organizations"                                   {:ooapi/cardinality :many
                                                        :ooapi/datatype :organization
                                                        :ooapi/filters #{:organizationType}
-                                                       :ooapi/sort #{"name""organizationId"}}
+                                                       :ooapi/sort #{"name" "organizationId"}}
    "/organizations/{organizationId}"                  {:ooapi/cardinality :one
                                                        :ooapi/datatype :organization
                                                        :ooapi/id-path [:path-params :organizationId]}
@@ -326,13 +358,13 @@
                                                        :ooapi/sort #{"personId" "givenName" "surName" "displayName"}}
    "/persons/{personId}"                              {:ooapi/cardinality :one
                                                        :ooapi/datatype :person
-                                                       :ooapi/id-path [:path-params :personId]}
-                                                       })
+                                                       :ooapi/id-path [:path-params :personId]}})
 
 ;; use ooapi version specific data
-(def route-data (case ooapi-version
-  "v4" route-data-v4
-  "v5" route-data-v5))
+(def route-data
+  (case ooapi-version
+    "v4" route-data-v4
+    "v5" route-data-v5))
 
 (defn build-routes
   [schema]
@@ -362,6 +394,4 @@
 
   (->> (routes)
        first
-       :parameters)
-
-  nil)
+       :parameters))

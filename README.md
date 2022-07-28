@@ -2,7 +2,7 @@
 
 OOAPI Demodata server - just add water to get an working [OOAPI](https://openonderwijsapi.nl/) endpoint with realistically looking data. This is useful for applications that have to work with an OOAPI endpoint but that do not yet have access to a real endpoint implemented by an educational institution.
 
-When started, OOAPI Demodata server generates random, but realistically looking data. All entities described in the the [OOAPI specification 4.0](https://open-education-api.github.io/specification/v4/docs.html) or [OOAPI specification 5.0](https://open-education-api.github.io/specification/v5/docs.html) get generated, including links between entities.
+When started, OOAPI Demodata server generates random, but realistically looking data. All entities described in the [OOAPI specification 4.0](https://open-education-api.github.io/specification/v4/docs.html) or [OOAPI specification 5.0](https://open-education-api.github.io/specification/v5/docs.html) get generated, including links between entities.
 
 ## Building and running
 OOAPI Demodata server is implemented in Clojure. There are two ways of building and running it:
