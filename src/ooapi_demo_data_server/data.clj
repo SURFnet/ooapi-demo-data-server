@@ -167,9 +167,10 @@
 
 (comment
   (:academicSession data)
-  (->> (:program data)
+  (->> (:programOffering data)
+       first
        #_(filter (comp #{nil} :program/primaryCode)) 
-       (map :program/primaryCode))
+       #_(map :program/primaryCode))
   )
 
 (def schema (json/parse-string (slurp (io/resource ooapi-file))

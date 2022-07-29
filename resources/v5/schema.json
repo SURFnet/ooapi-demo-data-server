@@ -539,18 +539,23 @@
         "generator": ["uuid"]
       },
       "primaryCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["programOffering/_codeType", "programOffering/_code"]
+        "generator": ["object", "codeType", "code", "offeringIdentifier"],
+        "deps": ["programOffering/_code"]
       },
       "offeringType": {
         "value": "program"
       },
-      "name": {
+      "_name": {
         "generator": ["format", "%s - %s"],
         "deps": [
-          ["programOffering/program", "program/name"],
-          ["programOffering/academicSession", "academicSession/name"]
-        ]
+          ["programOffering/program", "program/_name"],
+          ["programOffering/academicSession", "academicSession/_name"]
+        ],
+        "hidden": true
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["programOffering/_name"]
       },
       "abbreviation": {
         "deps": [
@@ -609,18 +614,42 @@
           ["programOffering/academicSession", "academicSession/endDate"]
         ]
       },
+      "enrollStartDate": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["programOffering/academicSession", "academicSession/startDate"]
+        ]
+      },
+      "enrollEndDate": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["programOffering/academicSession", "academicSession/endDate"]
+        ]
+      },
+      "flexibleEntryPeriodStart": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["programOffering/academicSession", "academicSession/startDate"]
+        ]
+      },
+      "flexibleEntryPeriodEnd": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["programOffering/academicSession", "academicSession/endDate"]
+        ]
+      },
+      "addresses": {
+        "deps": ["program/addresses"]
+      },
       "_maxNumberPendingStudents": {
         "deps": ["programOffering/maxNumberStudents", "programOffering/enrolledNumberStudents"],
         "generator": ["minus"],
         "hidden": true
       },
       "_otherCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["programOffering/_codeType", "programOffering/_code"]
-      },
-      "_codeType": {
-        "hidden": true,
-        "generator": ["one-of", ["offeringIdentifier"]]
+        "generator": ["object", "codeType", "code", "offeringIdentifier"],
+        "deps": ["programOffering/_code"],
+        "hidden": true
       },
       "_code": {
         "hidden": true,
@@ -1152,11 +1181,21 @@
         "generator": ["arrayize"],
         "deps": ["educationSpecification/_consumer"]
       },
+      "_validFrom": {
+        "generator": ["date", "1990-01-01", "2020-12-31"],
+        "hidden": true
+      },
+      "_validTo": {
+        "generator": ["date", "1990-01-01", "2020-12-31"],
+        "hidden": true
+      },
       "validFrom": {
-        "generator": ["date", "1990-01-01", "2020-12-31"]
+        "generator": ["format", "%tF"],
+        "deps": ["educationSpecification/_validFrom"]
       },
       "validTo": {
-        "generator": ["date", "1990-01-01", "2020-12-31"]
+        "generator": ["format", "%tF"],
+        "deps": ["educationSpecification/_validTo"]
       }
     }
   }]
