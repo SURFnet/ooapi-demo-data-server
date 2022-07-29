@@ -346,7 +346,7 @@
       },
       "_AllianceName": {
         "hidden": true,
-        "generator": ["one-of", ["ewwu", "lde"]]
+        "generator": ["one-of", ["ewuu", "lde"]]
       },
       "_AllianceTheme": {
         "hidden": true,
@@ -402,13 +402,16 @@
         "hidden": false,
         "deps": ["organization/organizationId"]
       },
-      "program": {
-        "hidden": false,
+      "_program": {
+        "hidden": true,
         "deps": ["program/programId"]
       },
-      "coordinator": {
-        "hidden": false,
+      "_coordinator": {
+        "hidden": true,
         "deps": ["person/personId"]
+      },
+      "educationSpecification": {
+        "deps": ["educationSpecification/educationSpecificationId"]
       }
     },
     "attributes": {
@@ -416,64 +419,105 @@
         "generator": ["uuid"]
       },
       "primaryCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["course/_codeType", "course/_code"]
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["course/courseId"]
+      },
+      "_name": {
+        "generator": ["format"],
+        "deps": ["course/_nameFormat", "course/_nameProgram"],
+        "hidden": true
       },
       "name": {
-        "generator": ["format"],
-        "deps": ["course/_nameFormat", "course/_nameProgram"]
+        "generator": ["language-typed-string"],
+        "deps": ["course/_name"]
       },
       "abbreviation": {
         "generator": ["abbreviate"],
-        "deps": ["course/name"],
+        "deps": ["course/_name"],
         "constraints": ["unique"]
       },
+      "_description": {
+        "generator": ["lorem-surf"],
+        "hidden": true
+      },
       "description": {
-        "generator": ["lorem-surf"]
+        "generator": ["language-typed-string"],
+        "deps": ["course/_description"]
       },
       "teachingLanguage": {
         "generator": ["one-of", ["nld", "eng"]]
       },
       "studyLoad": {
         "generator": ["object", "studyLoadUnit", "value"],
-        "deps": [["course/program", "program/_studyLoadUnit"], ["course/program", "program/_studyLoadValue"]]
+        "deps": [["course/_program", "program/_studyLoadUnit"], ["course/_program", "program/_studyLoadValue"]]
       },
       "modeOfDelivery": {
         "generator": ["at-least-one-of", ["distance-learning", "on campus", "online", "hybrid", "situated"]]
       },
       "duration": {
-        "generator": ["weighted", {
-          "6": 2,
-          "12": 3,
-          "36": 1
-        }]
+        "value": "P1DT30H4S"
+      },
+      "_firstStartDate": {
+        "generator": ["date", "2020-01-01", "2023-01-01"],
+        "hidden": true
       },
       "firstStartDate": {
-        "generator": ["date", "2020-01-01", "2023-01-01"]
+        "generator": ["format", "%tF"],
+        "deps": ["course/_firstStartDate"]
       },
       "fieldsOfStudy": {
         "generator": ["one-of", ["0011", "0021", "0031", "0111", "0112", "0113", "0114", "0211", "0212", "0213", "0214", "0215", "0221", "0222", "0223", "0231", "0232", "0311", "0312", "0313", "0314", "0321", "0322", "0411", "0412", "0413", "0414", "0415", "0416", "0417", "0421", "0511", "0512", "0521", "0522", "0531", "0532", "0533", "0541", "0542", "0611", "0612", "0613", "0711", "0712", "0713", "0714", "0715", "0716", "0721", "0722", "0723", "0724", "0731", "0732", "0811", "0812", "0821", "0831", "0841", "0911", "0912", "0913", "0914", "0915", "0916", "0917", "0921", "0922", "0923", "1011", "1012", "1013", "1014", "1015", "1021", "1022", "1031", "1032", "1041"]]
       },
+      "_learningOutcomes": {
+        "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]],
+        "hidden": true
+      },
       "learningOutcomes": {
-        "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]]
+        "generator": ["language-typed-strings"],
+        "deps": ["course/_learningOutcomes"]
+      },
+      "_admissionRequirements": {
+        "generator": ["lorem-surf", "requirements"],
+        "hidden": true
       },
       "admissionRequirements": {
-        "generator": ["lorem-surf", "requirements"]
+        "generator": ["language-typed-string"],
+        "deps": ["course/_admissionRequirements"]
+      },
+      "_qualificationRequirements": {
+        "generator": ["lorem-surf", "requirements"],
+        "hidden": true
       },
       "qualificationRequirements": {
-        "generator": ["lorem-surf", "requirements"]
+        "generator": ["language-typed-string"],
+        "deps": ["course/_qualificationRequirements"]
       },
       "level": {
         "generator": ["one-of", ["secondary vocational education 1","secondary vocational education 2","secondary vocational education 3", "secondary vocational education 4", "associate degree", "bachelor", "master", "doctoral","undefined","undivided","nt2-1","nt2-2"]]
       },
+      "_enrollment": {
+        "generator": ["lorem-surf", "enrollment"],
+        "hidden": true
+      },
       "enrollment": {
-        "generator": ["lorem-surf", "enrollment"]
+        "generator": ["language-typed-string"],
+        "deps": ["course/_enrollment"]
+      },
+      "_resources": {
+        "generator": ["lorem-surf", "resources"],
+        "hidden": true
       },
       "resources": {
-        "generator": ["lorem-surf", "resources"]
+        "generator": ["arrayize"],
+        "deps": ["course/_resources"]
+      },
+      "_assessment": {
+        "generator": ["lorem-surf", "assessment"],
+        "hidden": true
       },
       "assessment": {
-        "generator": ["lorem-surf", "assessment"]
+        "generator": ["language-typed-string"],
+        "deps": ["course/_assessment"]
       },
       "link": {
         "generator": ["format", "https://%s/courses/%s"],
@@ -483,15 +527,19 @@
       },
       "otherCodes": {
         "generator": ["arrayize"],
-        "deps": ["course/_otherCode"]
+        "deps": ["course/primaryCode"]
       },
       "addresses": {
         "generator": ["arrayize"],
         "deps": [["course/organization", "organization/_address"]]
       },
+      "coordinators": {
+        "generator": ["arrayize"],
+        "deps": ["course/_coordinator"] 
+      },
       "consumers": {
         "generator": ["object", "consumerKey", "alliances"],
-        "deps": [["course/program", "program/_consumerKey"], ["course/program", "program/_AlliancesArray"]]
+        "deps": [["course/_program", "program/_consumerKey"], ["course/_program", "program/_AlliancesArray"]]
       },
       "_nameFormat": {
         "hidden": true,
@@ -501,21 +549,29 @@
         "hidden": true,
         "generator": ["one-of-keyed-resource", "seeds/programme-names.yml"],
         "deps": [
-          ["course/program", "program/_crohoCreboCodeCategory"]
+          ["course/_program", "program/_crohoCreboCodeCategory"]
         ]
       },
-      "_otherCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["course/_codeType", "course/_code"]
+      "programs":
+      {
+        "generator": ["arrayize"],
+        "deps": ["course/_program"]
       },
-      "_codeType": {
-        "hidden": true,
-        "generator": ["one-of", ["identifier"]]
+      "_validFrom": {
+        "generator": ["date", "1990-01-01", "2020-12-31"],
+        "hidden": true
       },
-      "_code": {
-        "hidden": true,
-        "generator": ["format", "%s"],
-        "deps": [["course/program","program/_crohoCreboCode"]]
+      "_validTo": {
+        "generator": ["date", "1990-01-01", "2020-12-31"],
+        "hidden": true
+      },
+      "validFrom": {
+        "generator": ["format", "%tF"],
+        "deps": ["course/_validFrom"]
+      },
+      "validTo": {
+        "generator": ["format", "%tF"],
+        "deps": ["course/_validTo"]
       }
     }
   }, {
@@ -678,8 +734,8 @@
         "generator": ["uuid"]
       },
       "primaryCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["courseOffering/_codeType", "courseOffering/_code"]
+        "generator": ["object", "codeType", "code", "offeringCode"],
+        "deps": ["courseOffering/offeringId"]
       },
       "offeringType": {
         "value": "course"
@@ -734,7 +790,7 @@
       },
       "otherCodes": {
         "generator": ["arrayize"],
-        "deps": ["courseOffering/_otherCode"]
+        "deps": ["courseOffering/primaryCode"]
       },
       "startDate": {
         "generator": ["format", "%tF"],
@@ -752,19 +808,6 @@
         "deps": ["courseOffering/maxNumberStudents", "courseOffering/enrolledNumberStudents"],
         "generator": ["minus"],
         "hidden": true
-      },
-      "_otherCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["courseOffering/_codeType", "courseOffering/_code"]
-      },
-      "_codeType": {
-        "hidden": true,
-        "generator": ["one-of", ["offeringIdentifier"]]
-      },
-      "_code": {
-        "hidden": true,
-        "generator": ["format", "%s"],
-        "deps": [["courseOffering/course", "course/_code"]]
       }
     }
   }, {

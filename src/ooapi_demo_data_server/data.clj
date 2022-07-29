@@ -167,7 +167,7 @@
 
 (comment
   (:academicSession data)
-  (->> (:programOffering data)
+  (->> (:course data)
        first
        #_(filter (comp #{nil} :program/primaryCode)) 
        #_(map :program/primaryCode))
