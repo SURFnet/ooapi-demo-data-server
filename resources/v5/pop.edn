@@ -1,11 +1,11 @@
 {:service 1
  :organization 1
  :academicSession 5
- :educationSpecification 30
- :program 20
- :programOffering 10
- :programOfferingAssociation 15
- :course 1
- :courseOffering 10
- :courseOfferingAssociation 15
- :person 5}
+ :educationSpecification 40
+ :program 30
+ :programOffering 90
+ :programOfferingAssociation 50
+ :course 40
+ :courseOffering 120
+ :courseOfferingAssociation 100
+ :person 200}
