@@ -165,11 +165,10 @@
     (add-children-attr :program :program/programId :program/parent :program/children)
     ))
 
-(comment
-  (:academicSession data)
-  (->> (:course data)
+(comment 
+  (->> (:courseOffering data)
        first
-       #_(filter (comp #{nil} :program/primaryCode)) 
+       #_(filter (comp #{nil} :program/primaryCode))
        #_(map :program/primaryCode))
   )
 

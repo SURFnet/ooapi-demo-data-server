@@ -727,6 +727,10 @@
       "academicSession": {
         "hidden": false,
         "deps": ["academicSession/academicSessionId"]
+      },
+      "programOffering": {
+        "hidden": false,
+        "deps": ["programOffering/offeringId"]
       }
     },
     "attributes": {
@@ -740,12 +744,17 @@
       "offeringType": {
         "value": "course"
       },
-      "name": {
+      "_name": {
         "generator": ["format", "%s - %s"],
         "deps": [
-          ["courseOffering/course", "course/name"],
-          ["courseOffering/academicSession", "academicSession/name"]
-        ]
+          ["courseOffering/course", "course/_name"],
+          ["courseOffering/academicSession", "academicSession/_name"]
+        ],
+        "hidden": true
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["courseOffering/_name"]
       },
       "abbreviation": {
         "deps": [
@@ -783,7 +792,7 @@
         "generator": ["one-of", ["pass-or-fail", "US letter", "UK letter", "0-100", "1-10"]]
       },
       "link": {
-        "generator": ["format", "https://%s/programs/%s"],
+        "generator": ["format", "https://%s/offerings/%s"],
         "deps": [
           ["courseOffering/organization", "organization/_linkDomain"], "courseOffering/offeringId"
         ]
@@ -803,6 +812,33 @@
         "deps": [
           ["courseOffering/academicSession", "academicSession/endDate"]
         ]
+      },
+      "enrollStartDate": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/startDate"]
+        ]
+      },
+      "enrollEndDate": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/endDate"]
+        ]
+      },
+      "flexibleEntryPeriodStart": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/startDate"]
+        ]
+      },
+      "flexibleEntryPeriodEnd": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/endDate"]
+        ]
+      },
+      "addresses": {
+        "deps": [["courseOffering/course", "course/addresses"]]
       },
       "_maxNumberPendingStudents": {
         "deps": ["courseOffering/maxNumberStudents", "courseOffering/enrolledNumberStudents"],
