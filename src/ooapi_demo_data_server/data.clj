@@ -165,13 +165,6 @@
     (add-children-attr :program :program/programId :program/parent :program/children)
     ))
 
-(comment 
-  (->> (:courseOffering data)
-       first
-       #_(filter (comp #{nil} :program/primaryCode))
-       #_(map :program/primaryCode))
-  )
-
 (def schema (json/parse-string (slurp (io/resource ooapi-file))
                                #(if (str/starts-with? % "/") % (keyword %))))
 

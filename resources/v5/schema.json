@@ -946,8 +946,8 @@
         "constraints": ["unique"]
       },
       "primaryCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["person/_codeType", "person/_code"]
+        "generator": ["object", "codeType", "code", "personIdentifier"],
+        "deps": ["person/mail"]
       },
       "givenName": {
         "generator": ["one-of-resource-lines", "seeds/first-names.txt"]
@@ -982,8 +982,16 @@
       "activeEnrollment": {
         "generator": ["one-of", [true, false]]
       },
+      "_dateOfBirth": {
+        "generator": ["date", "1990-01-01", "2005-01-01"],
+        "hidden": true
+      },
       "dateOfBirth": {
-        "generator": ["date", "1990-01-01", "2005-01-01"]
+        "generator": ["format", "%tF"],
+        "deps": ["person/_dateOfBirth"]
+      },
+      "cityOfBirth": {
+        "generator": ["one-of-resource-lines", "seeds/city-names.txt"]
       },
       "affiliations": {
         "value": ["employee"]
@@ -1041,7 +1049,7 @@
       },
       "otherCodes": {
         "generator": ["arrayize"],
-        "deps": ["person/_otherCode"]
+        "deps": ["person/primaryCode"]
       },
       "_mobileNumber": {
         "hidden": true,
@@ -1082,19 +1090,6 @@
       "_office4": {
         "hidden": true,
         "generator": ["char", "0", "9"]
-      },
-      "_otherCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["person/_codeType", "person/_code"]
-      },
-      "_codeType": {
-        "hidden": true,
-        "generator": ["one-of", ["personIdentifier"]]
-      },
-      "_code": {
-        "hidden": true,
-        "generator": ["format", "%s"],
-        "deps": ["person/mail"]
       }
     }
   }, {
