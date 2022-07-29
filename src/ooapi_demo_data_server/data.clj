@@ -78,10 +78,11 @@
         lang (language/detect s)]
     (case lang
       "eng" (vector (assoc en :value s)
-                    (assoc nl :value (str "NEDERLANDSE VERTALING:\n" s)))
+                    (assoc nl :value (str "NL VERTALING: " s)))
       "nl" (vector (assoc nl :value s)
-                   (assoc en :value (str "ENGLISH TRANSLATION:\n" s)))
-      (vector (assoc nl :value s)))))
+                   (assoc en :value (str "EN TRANSLATION: " s)))
+      (vector (assoc nl :value s)
+              (assoc en :value (str "EN TRANSLATION: " s))))))
 
 (defmethod config/generator "language-typed-string" [_]
   (fn language-typed-string [_ s]
@@ -90,6 +91,10 @@
 (defmethod config/generator "language-typed-strings" [_]
   (fn language-typed-strings [_ strings]
     (map to-language-typed-string strings)))
+
+(defmethod config/generator "mapping" [_]
+  (fn mapping [_ m k]
+    (get m k #_(throw (ex-info "Incorrect mapping" {:m m :k k})))))
 
 (defn modify-org-hack
   "Very ugly hack to make sure there is one root organization
@@ -113,6 +118,26 @@
                   vec)]
     (assoc data :organization orgs)))
 
+(defn add-children-attr
+  [data entity-name self-attr-name parent-attr-name children-attr-name]
+  (let [make-ref (fn [id] [self-attr-name id])
+        entities (get data entity-name)
+        mapping (reduce
+                 (fn [mapping entity]
+                   (let [self-id (get entity self-attr-name)
+                         [_ parent-id] (get entity parent-attr-name)]
+                     (if parent-id
+                       (update mapping parent-id (fnil conj #{}) self-id)
+                       mapping)))
+                 {}
+                 entities)
+        new-entities (for [entity entities]
+                       (let [self-id (get entity self-attr-name)]
+                         (if-let [children (get mapping self-id)]
+                           (assoc entity children-attr-name (map make-ref children))
+                           entity)))]
+    (assoc data entity-name (vec new-entities))))
+
 (defn generate-data
   []
   (-> schema-file
@@ -124,9 +149,28 @@
                      (slurp)
                      (edn/read-string)))))
 
-(:program (generate-data))
+(def data
+  (cond-> (generate-data)
+    
+    true
+    (modify-org-hack)
 
-(def data (modify-org-hack (generate-data)))
+    (= ooapi-version "v5") 
+    (add-children-attr :educationSpecification :educationSpecification/educationSpecificationId :educationSpecification/parent :educationSpecification/children)
+    
+    (= ooapi-version "v5")
+    (add-children-attr :academicSession :academicSession/academicSessionId :academicSession/parent :academicSession/children)
+
+    (= ooapi-version "v5")
+    (add-children-attr :program :program/programId :program/parent :program/children)
+    ))
+
+(comment
+  (:academicSession data)
+  (->> (:program data)
+       #_(filter (comp #{nil} :program/primaryCode)) 
+       (map :program/primaryCode))
+  )
 
 (def schema (json/parse-string (slurp (io/resource ooapi-file))
                                #(if (str/starts-with? % "/") % (keyword %))))

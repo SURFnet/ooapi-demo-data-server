@@ -1,5 +1,6 @@
 {
-  "types": [{
+  "types": [
+  {
     "name": "service",
     "attributes": {
       "contactEmail": {
@@ -9,7 +10,7 @@
         "value": "https://open-education-api.github.io/specification/v5/docs.html"
       },
       "documentation": {
-        "value": "https://open-education-api.github.io/specification/v5/docs.html"
+        "value": "https://open-education-api.github.io/specification"
       }
     }
   }, {
@@ -174,9 +175,19 @@
         "hidden": false,
         "deps": ["organization/organizationId"]
       },
-      "coordinator": {
-        "hidden": false,
+      "_coordinator": {
+        "hidden": true,
         "deps": ["person/personId"]
+      },
+      "educationSpecification": {
+        "hidden": false,
+        "deps": ["educationSpecification/educationSpecificationId"]
+      },
+      "parent": {
+        "hidden": false,
+        "deps": ["program/programId"],
+        "graph": "tree",
+        "nilable": 0.8
       }
     },
     "attributes": {
@@ -184,13 +195,13 @@
         "generator": ["uuid"]
       },
       "primaryCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["program/_codeType", "program/_code"]
+        "generator": ["object", "codeType", "code", "croho"],
+        "deps": ["program/_crohoCreboCode"]
       },
       "programType": {
         "generator": ["weighted", {
-          "opleiding": 10,
-          "minor": 10,
+          "program": 20,
+          "minor": 15,
           "honours": 1,
           "specialization":1,
           "track": 1
@@ -292,11 +303,21 @@
         "generator": ["lorem-surf", "assessment"],
         "hidden": true
       },
+      "_admissionRequirements": {
+        "generator": ["lorem-surf", "requirements"],
+        "hidden": true
+      },
       "admissionRequirements": {
-        "generator": ["lorem-surf", "requirements"]
+        "generator": ["language-typed-string"],
+        "deps": ["program/_admissionRequirements"]
+      },
+      "_qualificationRequirements": {
+        "generator": ["lorem-surf", "requirements"],
+        "hidden": true
       },
       "qualificationRequirements": {
-        "generator": ["lorem-surf", "requirements"]
+        "generator": ["language-typed-string"],
+        "deps": ["program/_qualificationRequirements"]
       },
       "link": {
         "generator": ["format", "https://%s/programs/%s"],
@@ -312,9 +333,16 @@
         "generator": ["arrayize"],
         "deps": [["program/organization","organization/_address"]]
       },
+      "coordinators": {
+        "generator": ["arrayize"],
+        "deps": ["program/_coordinator"]
+      },
       "consumers": {
         "generator": ["object", "consumerKey", "alliances"],
         "deps": ["program/_consumerKey", "program/_AlliancesArray"]
+      },
+      "validFrom": {
+        "generator":  ["date", "1990-01-01", "2005-01-01"]
       },
       "_AllianceName": {
         "hidden": true,
@@ -339,22 +367,14 @@
         "value": "eduxchange"
       },
       "_otherCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["program/_codeType", "program/_code"]
-      },
-      "_codeType": {
-        "hidden": true,
-        "generator": ["one-of", ["croho"]]
-      },
-      "_code": {
-        "hidden": true,
-        "generator": ["format", "%s"],
-        "deps": ["program/_crohoCreboCode"]
+        "generator": ["object", "codeType", "code", "croho"],
+        "deps": ["program/_crohoCreboCode"],
+        "hidden": true
       },
       "_crohoCreboCode": {
         "hidden": true,
         "generator": ["one-of-keyed-resource", "seeds/crohocode.yml"],
-        "deps": ["program/name"]
+        "deps": ["program/_name"]
       },
       "_crohoCreboCodeCategory": {
         "hidden": true,
@@ -605,7 +625,7 @@
       "_code": {
         "hidden": true,
         "generator": ["format", "%s"],
-        "deps": [["programOffering/program","program/_code"]]
+        "deps": [["programOffering/program","program/_crohoCreboCode"]]
       }
     }
   }, {
@@ -720,12 +740,28 @@
     }
   }, {
     "name": "academicSession",
+    "refs": {
+      "parent": {
+        "hidden": false,
+        "graph": "tree",
+        "deps": ["academicSession/academicSessionId"],
+        "nilable": 0.2
+      }
+    } ,
     "attributes": {
       "academicSessionId": {
         "generator": ["uuid"]
       },
       "academicSessionType": {
         "generator": ["one-of", ["academic year","semester","trimester","quarter","testing period","period"]]
+      },
+      "_codeType": {
+        "value": "identifier",
+        "hidden": true
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code"],
+        "deps": ["academicSession/_codeType", "academicSession/academicSessionId"]
       },
       "name": {
         "generator": ["language-typed-string"],
@@ -951,6 +987,176 @@
         "hidden": true,
         "generator": ["format", "%s"],
         "deps": ["person/mail"]
+      }
+    }
+  }, {
+    "name": "educationSpecification",
+    "refs": {
+      "organization": {
+        "hidden": false,
+        "deps": ["organization/organizationId"]
+      },
+      "parent": {
+        "hidden": false,
+        "graph": "tree",
+        "deps": ["educationSpecification/educationSpecificationId"],
+        "nilable": 0.7
+      }
+    },
+    "attributes": {
+      "educationSpecificationId": {
+        "generator": ["uuid"]
+      },
+      "_codeType": {
+        "value": "identifier",
+        "hidden": true
+      },
+      "primaryCode": {
+        "generator": ["object"],
+        "deps": ["educationSpecification/_codeType", "educationSpecification/educationSpecificationId"]
+      },
+      "educationSpecificationType": {
+        "generator": ["one-of", ["program", "privateProgram", "cluster", "course"]]
+      },
+      "_crohoCreboCodeCategory":
+      {
+        "hidden": true,
+        "generator": ["one-of", ["Economie", "Gezondheidszorg", "Gedrag & Maatschappij", "Landbouw & Natuurlijke omgeving", "Natuur", "Onderwijs", "Taal & Cultuur", "Recht", "Techniek", "Sectoroverstijgend"]]
+      },
+      "_name": {
+        "generator": ["one-of-keyed-resource", "seeds/programme-names.yml"],
+        "deps": ["educationSpecification/_crohoCreboCodeCategory"],
+        "hidden": true
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["educationSpecification/_name"]
+      },
+      "abbreviation": {
+        "generator": ["abbreviate"],
+        "deps": ["educationSpecification/_name"],
+        "constraints": ["unique"]
+      },
+      "_description": {
+        "generator": "lorem-surf",
+        "hidden": true
+      },
+      "description": {
+        "generator": ["language-typed-string"],
+        "deps": ["educationSpecification/_description"]
+      },
+      "formalDocument": {
+        "generator": ["weighted", {
+          "diploma": 10,
+          "certificate": 3,
+          "no official document": 1,
+          "testimonial":1,
+          "school advice": 1
+        }]
+      },
+      "level": {
+        "generator": ["weighted", {
+          "secondary vocational education": 0,
+          "secondary vocational education 1": 0, 
+          "secondary vocational education 2": 0, 
+          "secondary vocational education 3": 0, 
+          "secondary vocational education 4": 0, 
+          "associate degree": 1, 
+          "bachelor": 10, 
+          "master": 5, 
+          "doctoral": 1, 
+          "undefined": 0, 
+          "undivided": 0, 
+          "nt2-1": 1, 
+          "nt2-2": 1
+        }]
+      },
+      "sector": {
+        "generator": ["mapping", {
+          "secondary vocational education": "secondary vocational education",
+          "secondary vocational education 1": "secondary vocational education",
+          "secondary vocational education 2": "secondary vocational education",
+          "secondary vocational education 3": "secondary vocational education",
+          "secondary vocational education 4": "secondary vocational education",
+          "associate degree": "higher professional education",
+          "bachelor": "higher professional education",
+          "master":  "university education",
+          "doctoral": "university education",
+          "undefined": "secondary vocational education",
+          "undivided": "secondary vocational education",
+          "nt2-1": "higher professional education",
+          "nt2-2":"higher professional education"
+        }],
+        "deps": ["educationSpecification/level"]
+      },
+      "levelOfQualification": {
+        "generator": ["mapping", {
+          "secondary vocational education": "1",
+          "secondary vocational education 1": "1",
+          "secondary vocational education 2": "2",
+          "secondary vocational education 3": "3",
+          "secondary vocational education 4": "4",
+          "associate degree": "5",
+          "bachelor": "6",
+          "master":  "7",
+          "doctoral": "8",
+          "undefined": "1",
+          "undivided": "1",
+          "nt2-1": "3",
+          "nt2-2":"3"
+        }],
+        "deps": ["educationSpecification/level"]
+      },
+      "fieldsOfStudy": {
+        "generator": ["one-of", ["0011", "0021", "0031", "0111", "0112", "0113", "0114", "0211", "0212", "0213", "0214", "0215", "0221", "0222", "0223", "0231", "0232", "0311", "0312", "0313", "0314", "0321", "0322", "0411", "0412", "0413", "0414", "0415", "0416", "0417", "0421", "0511", "0512", "0521", "0522", "0531", "0532", "0533", "0541", "0542", "0611", "0612", "0613", "0711", "0712", "0713", "0714", "0715", "0716", "0721", "0722", "0723", "0724", "0731", "0732", "0811", "0812", "0821", "0831", "0841", "0911", "0912", "0913", "0914", "0915", "0916", "0917", "0921", "0922", "0923", "1011", "1012", "1013", "1014", "1015", "1021", "1022", "1031", "1032", "1041"]]
+      },
+      "_studyLoadUnit": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "contactitem": 1,
+          "ects": 10,
+          "sbu": 1,
+          "sp":1,
+          "hour": 1
+        }]
+      },
+      "_studyLoadValue": {
+        "hidden": true,
+        "generator": ["int-cubic", 30, 180]
+      },
+      "studyLoad": {
+        "generator": ["object", "studyLoadUnit", "value"],
+        "deps": ["educationSpecification/_studyLoadUnit", "educationSpecification/_studyLoadValue"]
+      },
+      "_learningOutcomes": {
+        "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]],
+        "hidden": true
+      },
+      "learningOutcomes": {
+        "generator": ["language-typed-strings"],
+        "deps": ["educationSpecification/_learningOutcomes"]
+      },
+      "link": {
+        "generator": ["format", "https://%s/education-specifications/%s"],
+        "deps": [
+          ["educationSpecification/organization", "organization/_linkDomain"], "educationSpecification/educationSpecificationId"
+        ]
+      },
+      "_consumer": {
+        "value": {
+          "consumerKey": "rio"
+        },
+        "hidden": true
+      },
+      "consumers": {
+        "generator": ["arrayize"],
+        "deps": ["educationSpecification/_consumer"]
+      },
+      "validFrom": {
+        "generator": ["date", "1990-01-01", "2020-12-31"]
+      },
+      "validTo": {
+        "generator": ["date", "1990-01-01", "2020-12-31"]
       }
     }
   }]

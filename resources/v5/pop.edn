@@ -1,7 +1,8 @@
 {:service 1
  :organization 1
  :academicSession 5
- :program 1
+ :educationSpecification 30
+ :program 20
  :programOffering 10
  :programOfferingAssociation 15
  :course 1
