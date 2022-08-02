@@ -7,8 +7,7 @@
    [clojure.string :as str]
    [nl.surf.demo-data.config :as config]
    [nl.surf.demo-data.world :as world]
-   [remworks.markov-chain :as mc]
-   [ooapi-demo-data-server.language :as language]))
+   [remworks.markov-chain :as mc]))
 
 ;; use ooapi version specific resource files
 (def ^:dynamic ooapi-version (or (System/getenv "OOAPI_VERSION") "v5"))
@@ -74,15 +73,9 @@
 (defn to-language-typed-string
   [s]
   (let [en {:language "en-GB"}
-        nl {:language "nl-NL"}
-        lang (language/detect s)]
-    (case lang
-      "eng" (vector (assoc en :value s)
-                    (assoc nl :value (str "NL VERTALING: " s)))
-      "nl" (vector (assoc nl :value s)
-                   (assoc en :value (str "EN TRANSLATION: " s)))
-      (vector (assoc nl :value s)
-              (assoc en :value (str "EN TRANSLATION: " s))))))
+        nl {:language "nl-NL"}]
+    [(assoc en :value (str "EN TRANSLATION: " s))
+     (assoc nl :value (str "NL VERTALING: " s))]))
 
 (defmethod config/generator "language-typed-string" [_]
   (fn language-typed-string [_ s]
