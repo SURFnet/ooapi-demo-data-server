@@ -1,18 +1,28 @@
 (ns ooapi-demo-data-server.data
   (:require
-    [cheshire.core :as json]
-    [clojure.data.generators :as gen]
-    [clojure.edn :as edn]
-    [clojure.java.io :as io]
-    [clojure.string :as str]
-    [nl.surf.demo-data.config :as config]
-    [nl.surf.demo-data.world :as world]
-    [remworks.markov-chain :as mc]))
+   [cheshire.core :as json]
+   [clojure.data.generators :as gen]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [nl.surf.demo-data.config :as config]
+   [nl.surf.demo-data.world :as world]
+   [remworks.markov-chain :as mc]
+   [ooapi-demo-data-server.language :as language]))
+
+;; use ooapi version specific resource files
+(def ^:dynamic ooapi-version (or (System/getenv "OOAPI_VERSION") "v5"))
+
+(def schema-file (str ooapi-version "/schema.json"))
+
+(def ooapi-file (str ooapi-version "/ooapi.json"))
+
+(def pop-file (str ooapi-version "/pop.edn"))
 
 (def text-spaces (->> "seeds/data.edn"
                       io/resource
                       slurp
-                      read-string
+                      edn/read-string
                       (map #(dissoc % :id :field-of-study))
                       (reduce (fn [m x]
                                 (merge-with (fn [a b]
@@ -52,9 +62,39 @@
       (let [n (gen/uniform 1 (count xs))]
         (take n (gen/shuffle xs))))))
 
+(defmethod config/generator "array" [_]
+  (fn array [_ & xs]
+    (when (seq xs)
+      xs)))
+
 (defmethod config/generator "arrayize" [_]
   (fn arrayize [_ x]
     (when x [x])))
+
+(defn to-language-typed-string
+  [s]
+  (let [en {:language "en-GB"}
+        nl {:language "nl-NL"}
+        lang (language/detect s)]
+    (case lang
+      "eng" (vector (assoc en :value s)
+                    (assoc nl :value (str "NL VERTALING: " s)))
+      "nl" (vector (assoc nl :value s)
+                   (assoc en :value (str "EN TRANSLATION: " s)))
+      (vector (assoc nl :value s)
+              (assoc en :value (str "EN TRANSLATION: " s))))))
+
+(defmethod config/generator "language-typed-string" [_]
+  (fn language-typed-string [_ s]
+    (to-language-typed-string s)))
+
+(defmethod config/generator "language-typed-strings" [_]
+  (fn language-typed-strings [_ strings]
+    (map to-language-typed-string strings)))
+
+(defmethod config/generator "mapping" [_]
+  (fn mapping [_ m k]
+    (get m k #_(throw (ex-info "Incorrect mapping" {:m m :k k})))))
 
 (defn modify-org-hack
   "Very ugly hack to make sure there is one root organization
@@ -78,31 +118,82 @@
                   vec)]
     (assoc data :organization orgs)))
 
+(defn add-children-attr
+  [data entity-name self-attr-name parent-attr-name children-attr-name]
+  (let [make-ref (fn [id] [self-attr-name id])
+        entities (get data entity-name)
+        mapping (reduce
+                 (fn [mapping entity]
+                   (let [self-id (get entity self-attr-name)
+                         [_ parent-id] (get entity parent-attr-name)]
+                     (if parent-id
+                       (update mapping parent-id (fnil conj #{}) self-id)
+                       mapping)))
+                 {}
+                 entities)
+        new-entities (for [entity entities]
+                       (let [self-id (get entity self-attr-name)]
+                         (if-let [children (get mapping self-id)]
+                           (assoc entity children-attr-name (map make-ref children))
+                           entity)))]
+    (assoc data entity-name (vec new-entities))))
+
+(defn clean-empty-parents
+  [data entity-name parent-attr-name]
+  (let [entities (get data entity-name)
+        clean-fn (fn [entity] (let [[_ parent-uuid] (get entity parent-attr-name)]
+                                (if parent-uuid
+                                  entity
+                                  (dissoc entity parent-attr-name))))]
+    (assoc data entity-name (map clean-fn entities))))
+
 (defn generate-data
   []
-  (-> "schema.json"
+  (-> schema-file
       (io/resource)
       (slurp)
       (config/load-json)
-      (world/gen (-> "pop.edn"
+      (world/gen (-> pop-file
                      (io/resource)
                      (slurp)
                      (edn/read-string)))))
 
-(def data (modify-org-hack (generate-data)))
+(def data
+  (cond-> (generate-data)
 
-(def schema (json/parse-string (slurp (io/resource "ooapiv4.json"))
+    true
+    (modify-org-hack)
+
+    (= ooapi-version "v5")
+    (clean-empty-parents :educationSpecification :educationSpecification/parent)
+
+    (= ooapi-version "v5")
+    (add-children-attr :educationSpecification :educationSpecification/educationSpecificationId :educationSpecification/parent :educationSpecification/children)
+
+    (= ooapi-version "v5")
+    (clean-empty-parents :academicSession :academicSession/parent)
+
+    (= ooapi-version "v5")
+    (add-children-attr :academicSession :academicSession/academicSessionId :academicSession/parent :academicSession/children)
+
+    (= ooapi-version "v5")
+    (clean-empty-parents :program :program/parent)
+
+    (= ooapi-version "v5")
+    (add-children-attr :program :program/programId :program/parent :program/children)))
+
+(def schema (json/parse-string (slurp (io/resource ooapi-file))
                                #(if (str/starts-with? % "/") % (keyword %))))
 
-(def route-data
+(def route-data-v4
   {"/"                                                {:ooapi/cardinality :singleton
                                                        :ooapi/datatype :service}
 
    "/associations/{associationId}"                    {:ooapi/cardinality :one
                                                        :ooapi/id-path [:path-params :associationId]
                                                        :ooapi/datatype [:programOfferingAssociation :courseOfferingAssociation]
-                                                       :ooapi/expand {"person" [:one [:programOfferingAssociation/person :courseOfferingAssociation/person]]
-                                                                      "offering" [:one [:programOfferingAssociation/programOffering :courseOfferingAssociation/courseOffering] :offering]}}
+                                                       :ooapi/expands {:programOfferingAssociation/person :courseOfferingAssociation/person
+                                                                       :programOfferingAssociation/programOffering :courseOfferingAssociation/courseOffering}}
 
    "/academic-sessions"                               {:ooapi/cardinality :many
                                                        :ooapi/datatype :academicSession ; TODO requires special filter to filter by parent and year
@@ -128,9 +219,7 @@
    "/courses/{courseId}"                              {:ooapi/cardinality :one
                                                        :ooapi/datatype :course
                                                        :ooapi/id-path [:path-params :courseId]
-                                                       :ooapi/expand {"programs" [:many :course/program :programs]
-                                                                      "coordinator" [:one :course/coordinator]
-                                                                      "organization" [:one :course/organization]}}
+                                                       :ooapi/expands #{:course/program :course/coordinator :course/organization}}
    "/courses/{courseId}/offerings"                    {:ooapi/cardinality :many ; TODO: add filters for since and until
                                                        :ooapi/datatype :courseOffering
                                                        :ooapi/filters #{:mainLanguage :modeOfStudy :isLineItem}
@@ -142,13 +231,8 @@
    "/offerings/{offeringId}"                          {:ooapi/cardinality :one
                                                        :ooapi/id-path [:path-params :offeringId]
                                                        :ooapi/datatype [:programOffering :courseOffering]
-                                                       :ooapi/expand {"program" [:one :programOffering/program]
-                                                                      ;"programOffering" [:one] TODO fix this
-                                                                      "course" [:one :courseOffering/course]
-                                                                      ;"courseOffering" [:one] TODO fix this
-                                                                      "organization" [:one [:programOffering/organization :courseOffering/organization]]
-                                                                      "academicSession" [:one [:programOffering/academicSession :courseOffering/academicSession]]}}
-
+                                                       :ooapi/expands #{:programOffering/program :programOffering/organization :programOffering/academicSession
+                                                                        :courseOffering/course :courseOffering/organization :courseOffering/academicSession}}
    "/persons"                                         {:ooapi/cardinality :many
                                                        :ooapi/datatype :person
                                                        :ooapi/filters #{:affiliations}
@@ -172,9 +256,7 @@
    "/programs/{programId}"                            {:ooapi/cardinality :one
                                                        :ooapi/datatype :program
                                                        :ooapi/id-path [:path-params :programId]
-                                                       :ooapi/expand {;"parent" [:one] TODO fix this
-                                                                      ;"children" [:many] TODO fix this
-                                                                      "organization" [:one :program/organization]}}
+                                                       :ooapi/expands #{:program/organization}}
    "/programs/{programId}/courses"                    {:ooapi/cardinality :many
                                                        :ooapi/datatype :course
                                                        :ooapi/q-fields #{:name :abbreviation :description}
@@ -197,7 +279,6 @@
    "/organizations/{organizationId}"                  {:ooapi/cardinality :one
                                                        :ooapi/datatype :organization
                                                        :ooapi/id-path [:path-params :organizationId]}
-                                                       ;:ooapi/expand {}}
    "/organizations/{organizationId}/programs"         {:ooapi/cardinality :many
                                                        :ooapi/datatype :program
                                                        :ooapi/filters #{:type :qualificationAwarded :levelOfQualification :sector :fieldsOfStudy :crohoCreboCode}
@@ -214,8 +295,132 @@
                                                        :ooapi/sort #{"startDate" "offeringId" "name" "endDate"}
                                                        :ooapi/q-fields #{:name :abbreviation :description}
                                                        :ooapi/expands #{:programOffering/academicSession :courseOffering/academicSession}}})
-                                                       ;:ooapi/select {:refs #{:programOffering/academicSession :courseOffering/academicSession}
-                                                       ;               :path [:path-params :organizationId]}}})
+
+(def route-data-v5
+  {"/"                                                                             {:ooapi/cardinality :singleton
+                                                                                    :ooapi/datatype    :service}
+   "/organizations"                                                                {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :organization
+                                                                                    :ooapi/filters     #{:organizationType}
+                                                                                    :ooapi/sort        #{"name" "organizationId"}}
+   "/organizations/{organizationId}"                                               {:ooapi/cardinality :one
+                                                                                    :ooapi/datatype    :organization
+                                                                                    :ooapi/id-path     [:path-params :organizationId]
+                                                                                    :ooapi/expands     #{:organization/parent :organization/children}}
+   "/organizations/{organizationId}/programs"                                      {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :program
+                                                                                    :ooapi/filters     #{:teachingLanguage :programType :qualificationAwarded :levelOfQualification :sector :fieldsOfStudy}
+                                                                                    :ooapi/select      {:refs #{:program/organization}
+                                                                                                        :path [:path-params :organizationId]}}
+   "/organizations/{organizationId}/courses"                                       {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :course
+                                                                                    :ooapi/filters     #{:teachingLanguage :level :modeOfDelivery}
+                                                                                    :ooapi/select      {:refs #{:course/organization}
+                                                                                                        :path [:path-params :organizationId]}}
+   "/organizations/{organizationId}/offerings"                                     {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    [:programOffering :courseOffering]
+                                                                                    :ooapi/filters     #{:teachingLanguage :offeringType :resultExpected}
+                                                                                    :ooapi/sort        #{"startDate" "offeringId" "name" "endDate"}
+                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}}
+   "/education-specifications"                                                     {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :educationSpecification
+                                                                                    :ooapi/filters     #{:educationSpecificationType}
+                                                                                    :ooapi/sort        #{"educationSpecificationType" "name" "primaryCode"}}
+   "/education-specifications/{educationSpecificationId}"                          {:ooapi/cardinality :one
+                                                                                    :ooapi/datatype    :educationSpecification
+                                                                                    :ooapi/id-path     [:path-params :educationSpecificationId]
+                                                                                    :ooapi/expands     #{:educationSpecification/parent :educationSpecification/children :educationSpecification/organization}}
+   "/education-specifications/{educationSpecificationId}/education-specifications" {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :educationSpecification
+                                                                                    :ooapi/select      {:refs #{:educationSpecification/parent}
+                                                                                                        :path [:path-params :educationSpecificationId]}}
+   "/education-specifications/{educationSpecificationId}/programs"                 {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :program
+                                                                                    :ooapi/select      {:refs #{:program/educationSpecification}
+                                                                                                        :path [:path-params :educationSpecificationId]}}
+   "/education-specifications/{educationSpecificationId}/courses"                  {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :course
+                                                                                    :ooapi/select      {:refs #{:course/educationSpecification}
+                                                                                                        :path [:path-params :educationSpecificationId]}}
+   "/programs"                                                                     {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :program
+                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
+                                                                                    :ooapi/filters     #{:teachingLanguage :programType :qualificationAwarded :levelOfQualification :sector :fieldsOfStudy}
+                                                                                    :ooapi/sort        #{"programId" "name"}}
+   "/programs/{programId}"                                                         {:ooapi/cardinality :one
+                                                                                    :ooapi/datatype    :program
+                                                                                    :ooapi/id-path     [:path-params :programId]
+                                                                                    :ooapi/expands     #{:program/parent :program/children :program/coordinator :program/organization :program/educationSpecification}}
+   "/programs/{programId}/programs"                                                {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :program
+                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
+                                                                                    :ooapi/filters     #{:teachingLanguage  :programType :qualificationAwarded :levelOfQualification :sector :fieldsOfStudy}
+                                                                                    :ooapi/sort        #{"programId" "name"}
+                                                                                    :ooapi/select      {:refs #{:program/parent}
+                                                                                                        :path [:path-params :programId]}}
+   "/programs/{programId}/courses"                                                 {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :course
+                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
+                                                                                    :ooapi/filters     #{:teachingLanguage :level :modeOfDelivery}
+                                                                                    :ooapi/sort        #{"courseId" "name"}
+                                                                                    :ooapi/select      {:refs #{:course/program}
+                                                                                                        :path [:path-params :programId]}}
+   "/programs/{programId}/offerings"                                               {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :programOffering
+                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
+                                                                                    :ooapi/filters     #{:teachingLanguage :offeringType :resultExpected}
+                                                                                    :ooapi/sort        #{"startDate" "offeringId" "name" "endDate"}
+                                                                                    :ooapi/select      {:refs #{:programOffering/program}
+                                                                                                        :path [:path-params :programId]}
+                                                                                    :ooapi/expands     #{:programOffering/academicSession}}
+   "/courses"                                                                      {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :course
+                                                                                    :ooapi/filters     #{:teachingLanguage :level :modeOfDelivery}
+                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
+                                                                                    :ooapi/sort        #{"name" "courseId"}}
+   "/courses/{courseId}"                                                           {:ooapi/cardinality :one
+                                                                                    :ooapi/datatype    :course
+                                                                                    :ooapi/id-path     [:path-params :courseId]
+                                                                                    :ooapi/expands     #{:course/coordinators :course/programs :course/organization :course/educationSpecification}}
+   "/courses/{courseId}/offerings"                                                 {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :courseOffering
+                                                                                    :ooapi/filters     #{:teachingLanguage :offeringType :resultExpected}
+                                                                                    :ooapi/sort        #{"startDate" "offeringId" "name" "endDate"}
+                                                                                    :ooapi/select      {:refs #{:courseOffering/course}
+                                                                                                        :path [:path-params :courseId]}}
+   "/offerings/{offeringId}"                                                       {:ooapi/cardinality :one
+                                                                                    :ooapi/id-path     [:path-params :offeringId]
+                                                                                    :ooapi/datatype    [:programOffering :courseOffering]
+                                                                                    :ooapi/expands     #{:programOffering/program :programOffering/organization :programOffering/academicSession
+                                                                                                         :courseOffering/course :courseOffering/organization :courseOffering/academicSession}}
+   "/academic-sessions"                                                            {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :academicSession
+                                                                                    :ooapi/filters     #{:academicSessionType}
+                                                                                    :ooapi/sort        #{"startDate" "academicSessionId" "name"}}
+   "/academic-sessions/{academicSessionId}"                                        {:ooapi/cardinality :one
+                                                                                    :ooapi/datatype    :academicSession
+                                                                                    :ooapi/id-path     [:path-params :academicSessionId]
+                                                                                    :ooapi/expands     #{:academicSession/parent :academicSession/children}}
+   "/academic-sessions/{academicSessionId}/offerings"                              {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    [:programOffering :courseOffering]
+                                                                                    :ooapi/filters     #{:teachingLanguage :offeringType :resultExpected}
+                                                                                    :ooapi/sort        #{"startDate" "offeringId" "name" "endDate"}
+                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
+                                                                                    :ooapi/select      {:refs #{:programOffering/academicSession :courseOffering/academicSession}
+                                                                                                        :path [:path-params :academicSessionId]}}
+   "/persons"                                                                      {:ooapi/cardinality :many
+                                                                                    :ooapi/datatype    :person
+                                                                                    :ooapi/filters     #{:affiliations}
+                                                                                    :ooapi/sort        #{"personId" "givenName" "surName" "displayName"}}
+   "/persons/{personId}"                                                           {:ooapi/cardinality :one
+                                                                                    :ooapi/datatype    :person
+                                                                                    :ooapi/id-path     [:path-params :personId]}})
+
+;; use ooapi version specific data
+(def route-data
+  (case ooapi-version
+    "v4" route-data-v4
+    "v5" route-data-v5))
 
 (defn build-routes
   [schema]
@@ -245,6 +450,4 @@
 
   (->> (routes)
        first
-       :parameters)
-
-  nil)
+       :parameters))

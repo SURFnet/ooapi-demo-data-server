@@ -1,6 +1,6 @@
 {:paths ["resources" "src"]
 
- :deps {org.clojure/clojure            {:mvn/version "1.10.1"}
+ :deps {org.clojure/clojure            {:mvn/version "1.11.1"}
         cheshire/cheshire              {:mvn/version "5.10.0"}
 
         aero/aero                      {:mvn/version "1.1.6"}
@@ -19,11 +19,18 @@
         org.slf4j/jcl-over-slf4j       {:mvn/version "1.7.32"}
         org.slf4j/log4j-over-slf4j     {:mvn/version "1.7.32"}
         org.slf4j/osgi-over-slf4j      {:mvn/version "1.7.32"}
-        ch.qos.logback/logback-classic {:mvn/version "1.2.7"}}
+        ch.qos.logback/logback-classic {:mvn/version "1.2.7"}
+
+        org.apache.opennlp/opennlp-tools {:mvn/version "2.0.0"}}
 
  :aliases {:dev      {:extra-paths ["dev"]
                       :extra-deps {mvxcvi/puget                 {:mvn/version "1.1.2"}
                                    integrant/repl               {:mvn/version "0.3.2"}}}
-           :depstar {:extra-deps {seancorfield/depstar {:mvn/version "1.1.136"}}
-                     :ns-default hf.depstar
-                     :exec-args {}}}}
+           :build {:deps {io.github.seancorfield/build-clj
+                          {:git/tag "v0.8.3" :git/sha "7ac1f8d"
+                           :deps/root "slim"}}
+                   :ns-default build}
+           :reveal-nrepl-middleware {:extra-deps {vlaaad/reveal {:mvn/version "RELEASE"}}
+                                     :main-opts  ["-m" "nrepl.cmdline"
+                                                  "--middleware" "[vlaaad.reveal.nrepl/middleware,cider.nrepl/cider-middleware]"]
+                                     :jvm-opts ["-Dvlaaad.reveal.prefs={:theme,:light,:font-size,14}"]}}}

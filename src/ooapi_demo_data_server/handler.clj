@@ -1,17 +1,17 @@
 (ns ooapi-demo-data-server.handler
   (:require
-    [cheshire.core :as json]
-    [cheshire.generate :as jsong]
-    [clojure.instant :refer [read-instant-date]]
-    [clojure.string :as str]
-    [clojure.set :refer [rename-keys intersection]]
-    [integrant.core :as ig]
-    [clojure.tools.logging :as log]
-    [ooapi-demo-data-server.data :refer [data routes]]
-    [ooapi-demo-data-server.common :as common]
-    [reitit.ring :as ring]
-    [reitit.ring.middleware.dev]
-    [reitit.ring.middleware.parameters :refer [parameters-middleware]]))
+   [cheshire.core :as json]
+   [cheshire.generate :as jsong]
+   [clojure.instant :refer [read-instant-date]]
+   [clojure.string :as str]
+   [clojure.set :refer [rename-keys intersection difference]]
+   [integrant.core :as ig]
+   [clojure.tools.logging :as log]
+   [ooapi-demo-data-server.data :as data]
+   [ooapi-demo-data-server.common :as common]
+   [reitit.ring :as ring]
+   [reitit.ring.middleware.dev]
+   [reitit.ring.middleware.parameters :refer [parameters-middleware]]))
 
 (defmulti coerce-parameter (fn [schema _] (:type schema)))
 
@@ -67,6 +67,9 @@
                        (filter (set enum))
                        (into [])))))
 
+; HERMAN: in v5 parameter & parameter.schema kan een $ref zijn
+; use the script 'fixRefs.js' to get rid of those refs in the ooapiv5.json file
+; could probably be fixed here as well
 (defn req->param-schemas
   [req source]
   (->> req
@@ -133,12 +136,12 @@
         select-refs (req->select-refs req)
         selected? (fn [item]
                     (contains?
-                      (->> (select-keys item select-refs)
-                           (vals)
-                           (map second)
-                           (remove nil?)
-                           (into #{}))
-                      select-id))]
+                     (->> (select-keys item select-refs)
+                          (vals)
+                          (map second)
+                          (remove nil?)
+                          (into #{}))
+                     select-id))]
     (if select-path
       (filter selected? items)
       items)))
@@ -169,90 +172,150 @@
   [req]
   (let [datatype (req->datatype req)]
     (if (vector? datatype)
-      (reduce (fn [items dt] (concat items (get data dt)))
-              [] datatype)
-      (get data datatype))))
+      (reduce
+       (fn [items dt] (concat items (get data/data dt)))
+       []
+       datatype)
+      (get data/data datatype))))
 
 (jsong/add-encoder java.util.GregorianCalendar
                    (fn [c jsonGenerator]
                      (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") (.getTime c)))))
 
-(defn is-ref?
-  [v]
-  (and (vector? v)
-       (qualified-keyword? (first v))
-       (uuid? (second v))))
+(defn single-ref?
+  [x]
+  (and (vector? x)
+       (qualified-keyword? (first x))
+       (uuid? (second x))))
 
-(defn clean-item
-  [item]
-  (->> item
-       (remove (fn [[_ v]] (is-ref? v)))
-       (into {})))
+(defn many-ref?
+  [x]
+  (boolean
+   (when x
+     (and (coll? x)
+          (every? single-ref? x)))))
 
-(defn get-ref
+(defn ref?
+  [x]
+  (or (single-ref? x)
+      (many-ref? x)))
+
+(defn resolve-single-ref
   [[attr id]]
   (let [datatype (keyword (namespace attr))
-        items (get data datatype)
+        items (get data/data datatype)
         indexed-items (common/index-by attr items)]
     (get indexed-items id)))
 
+(defn resolve-many-refs
+  [refs]
+  (map resolve-single-ref refs))
+
+(defn resolve-ref
+  [ref]
+  (if (many-ref? ref)
+    (resolve-many-refs ref)
+    (resolve-single-ref ref)))
+
+;; WHY ARE THE FOLLOWING TO FUNCTIONS DIFFERENT?
 (defn req->expands
   [req]
   (-> req ring/get-match :data :ooapi/expands))
 
+(defn calc-total-pages
+  [page-size n-items]
+  (let [q (quot n-items page-size)
+        r (rem n-items page-size)]
+    (if (zero? r)
+      q
+      (inc q))))
+
+(defn clean-attr
+  [item attr] 
+  (case data/ooapi-version
+    "v4"
+    (dissoc item attr)
+
+    "v5"
+    (if-let [current-value (get item attr)]
+      (let [new-value (if (many-ref? current-value)
+                        (map second current-value)
+                        (second current-value))]
+        (assoc item attr new-value))
+      item)))
+
+(defn clean-item-attrs
+  [item attrs]
+  (reduce (fn [i attr] (clean-attr i attr)) item attrs))
+
+(defn clean-item
+  [item]
+  (reduce (fn [i attr] 
+            (if (ref? (get item attr))
+              (clean-attr i attr)
+              i))
+          item
+          (keys item)))
+
+(defn expand-attr
+  "Expands an attribute by resolving the ref.
+   Cleans expanded items so that they are suitable
+   for returning in the response."
+  [item attr]
+  (if-let [ref (get item attr)]
+    (let [resolved-item-or-items (resolve-ref ref)
+          first-item (if (map? resolved-item-or-items) resolved-item-or-items (first resolved-item-or-items))
+          attrs-to-clean (->> first-item
+                              (map (fn [[k v]] (when (ref? v) k)))
+                              (remove nil?))
+          cleaned-item-or-items (if (map? resolved-item-or-items)
+                                  (clean-item-attrs resolved-item-or-items attrs-to-clean)
+                                  (map (fn [item] (clean-item-attrs item attrs-to-clean)) resolved-item-or-items))]
+      (assoc item attr cleaned-item-or-items))
+    item))
+
+(defn expand-item-attrs
+  [item attrs]
+  (reduce (fn [i attr] (expand-attr i attr)) item attrs))
+
+(defn vectorize
+  [x]
+  (if (coll? x)
+    (vec x)
+    [x]))
+
 (defn expand-item
-  [expands item]
-  (let [attrs (intersection (->> item keys (into #{}))
-                            expands)
-        f (fn [m attr v]
-            (if (contains? attrs attr)
-              (assoc m attr (get-ref v))
-              (assoc m attr v)))]
-    (reduce-kv f {} item)))
-
-(defn apply-expands
-  [req items]
-  (let [expands (req->expands req)]
-    (if expands
-      (map (partial expand-item expands) items)
-      items)))
-
+  [req item]
+  (let [datatypes (vectorize (req->datatype req))
+        expandable-attrs (req->expands req)
+        attrs-to-expand (->> (get-in req [:query-params :expand])
+                             (mapcat (fn [kw] (for [datatype datatypes]
+                                                (combine-kw datatype kw))))
+                             (set)
+                             (intersection expandable-attrs))
+        attrs-to-clean (difference expandable-attrs attrs-to-expand)] 
+    (-> item
+        (#(expand-item-attrs % attrs-to-expand))
+        (#(clean-item-attrs % attrs-to-clean)))))
 
 (defn many-handler
-  [req]
+  [{:keys [ooapi-version] :as req}]
   (let [page-size (get-in req [:query-params :pageSize])
         page-number (get-in req [:query-params :pageNumber] 1)
-        items (get-items req)]
-    {:pageSize page-size
-     :pageNumber page-number
-     :items (->> items
-                 (apply-select req)
-                 (apply-filters req)
-                 (apply-pagination page-size page-number)
-                 (apply-expands req)
-                 (map clean-item))}))
-
-(defn req->expand
-  [req]
-  (-> req ring/get-match :data :ooapi/expand))
-
-(defn apply-expand
-  [item {:keys [query-params] :as req}]
-  (let [expands (req->expand req)
-        to-expand (set (:expand query-params))
-        expand (fn [item [exp [cardinality attrs rename]]]
-                 (let [attr (if (vector? attrs) ; select the right attr by testing which are in the entity
-                              (->> attrs (filter #(contains? item %)) first)
-                              attrs)]
-                   (if (contains? to-expand exp)
-                     (let [ref (get item attr)
-                           expanded-item (clean-item (get-ref ref))]
-                       (cond-> item
-                         true (assoc attr expanded-item)
-                         (= cardinality :many) (assoc attr [expanded-item]) ; TODO this is a hack because we have no many-many relations between courses and programmes yet
-                         rename (rename-keys {attr rename})))
-                     (dissoc item attr))))]
-    (reduce expand item expands)))
+        items (get-items req)
+        filtered-items (->> items
+                            (apply-select req)
+                            (apply-filters req)
+                            (map (partial expand-item req))
+                            (map clean-item))
+        total-pages (calc-total-pages page-size (count filtered-items))
+        v5? (= ooapi-version "v5")]
+    (cond-> {:pageSize page-size
+             :pageNumber page-number
+             :items (apply-pagination page-size page-number filtered-items)}
+      v5? (assoc :hasPreviousPage (> 1 page-number)
+                 :hasNextPage (< page-number total-pages)
+                 :totalPages total-pages))))
 
 (defn get-item-in-one
   [req]
@@ -270,13 +333,13 @@
         id (req->id req)
         datatypes (req->datatype req)]
     (first
-      (remove nil?
-        (for [datatype datatypes]
-          (let [items (get data datatype)
-                id-attr (keyword (name datatype)
-                                 (name (last id-path)))
-                indexed-items (common/index-by id-attr items)]
-            (get indexed-items id)))))))
+     (remove nil?
+             (for [datatype datatypes]
+               (let [items (get data/data datatype)
+                     id-attr (keyword (name datatype)
+                                      (name (last id-path)))
+                     indexed-items (common/index-by id-attr items)]
+                 (get indexed-items id)))))))
 
 (defn get-item
   [req]
@@ -287,13 +350,14 @@
 
 (defn one-handler
   [req]
-  (-> (get-item req)
-      (apply-expand req)))
+  (->> (get-item req)
+       (expand-item req)
+       (clean-item)))
 
 (defn singleton-handler
   [req]
   (let [datatype (req->datatype req)]
-    (first (get data datatype))))
+    (first (get data/data datatype))))
 
 (defn handler
   [req]
@@ -326,12 +390,17 @@
                 (Thread/sleep delay)
                 (normal-handler req))))))
 
+(defn insert-ooapi-version
+  [handler]
+  (fn [req]
+    (handler (assoc req :ooapi-version data/ooapi-version))))
+
 (defn router
   []
   (ring/router
-    (->> (routes)
-         (mapv (juxt :path #(assoc % :get handler))))
-    {:data {:middleware [parameters-middleware]}}))
+   (->> (data/routes)
+        (mapv (juxt :path #(assoc % :get handler))))
+   {:data {:middleware [insert-ooapi-version parameters-middleware]}}))
 
 (defmethod ig/init-key ::app
   [_ {:keys [chaos? chaos-modes]}]
@@ -347,6 +416,49 @@
       (create-chaos-handler normal-handler modes)
       normal-handler)))
 
+(comment
 
-;(app {:request-method :get :uri "/courses"
-;      :query-string "pageNumber=2&level=bachelor&sort=name,-ects"})
+  (defn try-app
+    ([uri query-string]
+     (let [app (ring/ring-handler (router))
+           request {:request-method :get
+                    :uri uri
+                    :query-string query-string}
+           response-str (:body (app request))]
+       (json/parse-string response-str)))
+    ([uri]
+     (try-app uri nil)))
+
+  (try-app "/courses")
+
+  (try-app "/courses" "pageSize=20")
+
+  (try-app "/courses/fa00a62b-525b-19df-8a3c-47434a535c55" "expand=coordinators")
+
+  (try-app "/education-specifications")
+
+  ; no children 465b8146-59e1-a484-c72c-15b9d73e6f71
+  (try-app "/education-specifications/465b8146-59e1-a484-c72c-15b9d73e6f71" "expand=children")
+
+  ; with children fdc89678-1688-ce14-d649-6bcebac7f652
+  (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652" "expand=children")
+  (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652")
+
+  ; with parent 7f4b5fab-3020-06b9-ac67-4e81352ceed1
+  (try-app "/education-specifications/7f4b5fab-3020-06b9-ac67-4e81352ceed1" "expand=parent")
+  (try-app "/education-specifications/7f4b5fab-3020-06b9-ac67-4e81352ceed1")
+
+  ; no parent fdc89678-1688-ce14-d649-6bcebac7f652
+  (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652" "expand=parent")
+
+  (try-app "/courses/a33cbd99-c437-3cee-d2e4-f5517958fd6c/offerings" #_"expand=parent")
+
+  (try-app "/offerings/e4ddcd1b-c4b3-ff68-a21d-81e40b478c23" "expand=course")
+
+  (->> data/data
+       :educationSpecification
+       (filter (comp #{#uuid "fdc89678-1688-ce14-d649-6bcebac7f652"} :educationSpecification/educationSpecificationId))
+       first)
+
+  (count (:course data/data))
+  )
