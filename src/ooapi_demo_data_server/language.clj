@@ -6,7 +6,6 @@
 
 (def model-input-stream (-> "langdetect-183.bin"
                             (io/resource)
-                            (io/file)
                             (io/input-stream)))
 
 (def model (LanguageDetectorModel. model-input-stream))

@@ -677,7 +677,7 @@
   }, {
     "name": "programOfferingAssociation",
     "refs": {
-      "programOffering": {
+      "offering": {
         "hidden": false,
         "deps": ["programOffering/offeringId"]
       },
@@ -743,7 +743,7 @@
   }, {
     "name": "courseOfferingAssociation",
     "refs": {
-      "courseOffering": {
+      "offering": {
         "hidden": false,
         "deps": ["courseOffering/offeringId"]
       },

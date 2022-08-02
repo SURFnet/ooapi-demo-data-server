@@ -30,7 +30,7 @@ Then run using:
 ## Features
 
 ### Choosing the OOAPI version
-Use the environment variable `OOAPIVERSION` to choose which OOAPI version to support. Allowed values are `v4` and `v5`.
+Use the environment variable `OOAPI_VERSION` to choose which OOAPI version to support. Allowed values are `v4` and `v5`.
 
 ### Setting the seed
 Each time the server runs, new random data is generated. To make runs reproducible you can set the seed user for random generation. Use the environment variable `SEED` to an integer. Reusing the same integer across runs should result in the same data being generated each time.

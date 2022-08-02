@@ -411,6 +411,7 @@
         "deps": ["person/personId"]
       },
       "educationSpecification": {
+        "hidden": false,
         "deps": ["educationSpecification/educationSpecificationId"]
       }
     },
