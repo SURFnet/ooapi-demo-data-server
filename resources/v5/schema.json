@@ -381,14 +381,66 @@
         "generator": ["arrayize"],
         "deps": ["program/_alliance"]
       },
-      "_consumer": {
+      "_eduxchangeConsumer": {
         "hidden": true,
         "generator": ["object", "consumerKey", "alliances", "eduxchange"],
         "deps": ["program/_alliancesArray"]
       },
+      "_rioConsentParticipationSTAP": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "permission_granted": 1,
+          "permission_not_granted": 9
+        }]
+      },
+      "_rioJointPartnerCodes": {
+        "hidden": true,
+        "value": ["123A321"]
+      },
+      "_rioForeignPartners": {
+        "hidden": true,
+        "generator": ["at-least-one-of", ["Massachusetts Institute of Technology (MIT)", "University of Cambridge", "Stanford University", "University of Oxford", "Harvard University", "California Institute of Technology (Caltech)", "Imperial College London", "UCL (University College London)", "ETH Zurich (Swiss Federal Institute of Technology)", "University of Chicago", "National University of Singapore (NUS)", "Peking University"]]
+      },
+      "_rioDeficiency": {
+        "hidden": true,
+        "generator": ["one-of", ["deficiencies", "no_deficiencies"]]
+      },
+      "_rioRequirementsActivities": {
+        "hidden": true,
+        "generator": ["one-of", ["requirements", "no_requirements"]]
+      },
+      "_rioPropaedeuticPhase": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "no_propaedeutic_phase": 10,
+          "propaedeutic_phase_exam": 1,
+          "propaedeutic_phase_no_exam": 1
+        }]
+      },
+      "_rioStudyChoiceCheck": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "no_study_choice_check": 10,
+          "study_choice_check_available": 5,
+          "study_choice_check_mandatory": 1
+        }]
+      },
+      "_rioAcceleratedRoute": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "accelerated_route": 1,
+          "no_accelerated_route": 20
+        }]
+      },
+      "_rioConsumer": {
+        "hidden": true,
+        "generator": ["object-with-optionals", {"jointPartnerCodes": 0.1, "foreignPartners": 0.1},
+                      "consumerKey", "educationOffererCode", "educationLocationCode", "consentParticipationSTAP", "jointPartnerCodes", "foreignPartners", "deficiency", "requirementsActivities", "propaedeuticPhase", "studyChoiceCheck", "acceleratedRoute", "rio", "122A112", "123X122"],
+        "deps": ["program/_rioConsentParticipationSTAP", "program/_rioJointPartnerCodes", "program/_rioForeignPartners", "program/_rioDeficiency", "program/_rioRequirementsActivities", "program/_rioPropaedeuticPhase", "program/_rioStudyChoiceCheck", "program/_rioAcceleratedRoute"]
+      },
       "consumers": {
-        "generator": ["arrayize"],
-        "deps": ["program/_consumer"]
+        "generator": ["array"],
+        "deps": ["program/_eduxchangeConsumer", "program/_rioConsumer"]
       },
       "_otherCode": {
         "generator": ["object", "codeType", "code", "croho"],
@@ -603,14 +655,36 @@
         "generator": ["arrayize"],
         "deps": ["course/_alliance"]
       },
-      "_consumer": {
+      "_eduxchangeConsumer": {
         "hidden": true,
         "generator": ["object", "consumerKey", "alliances", "eduxchange"],
         "deps": ["course/_alliancesArray"]
       },
+      "_rioConsentParticipationSTAP": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "permission_granted": 1,
+          "permission_not_granted": 9
+        }]
+      },
+      "_rioJointPartnerCodes": {
+        "hidden": true,
+        "value": ["123A321"]
+      },
+      "_rioForeignPartners": {
+        "hidden": true,
+        "generator": ["at-least-one-of", ["Massachusetts Institute of Technology (MIT)", "University of Cambridge", "Stanford University", "University of Oxford", "Harvard University", "California Institute of Technology (Caltech)", "Imperial College London", "UCL (University College London)", "ETH Zurich (Swiss Federal Institute of Technology)", "University of Chicago", "National University of Singapore (NUS)", "Peking University"]]
+      },
+      "_rioConsumer": {
+        "hidden": true,
+        "generator": ["object-with-optionals", {"jointPartnerCodes": 0.1, "foreignPartners": 0.1},
+                      "consumerKey", "educationOffererCode", "educationLocationCode", "consentParticipationSTAP", "jointPartnerCodes", "foreignPartners",
+                      "rio", "122A112", "123X122"],
+        "deps": ["course/_rioConsentParticipationSTAP", "course/_rioJointPartnerCodes", "course/_rioForeignPartners"]
+      },
       "consumers": {
-        "generator": ["arrayize"],
-        "deps": ["course/_consumer"]
+        "generator": ["array"],
+        "deps": ["course/_eduxchangeConsumer", "course/_rioConsumer"]
       },
       "_nameFormat": {
         "hidden": true,
@@ -782,6 +856,29 @@
         "hidden": true,
         "generator": ["format", "%s"],
         "deps": [["programOffering/program","program/_crohoCreboCode"]]
+      },
+      "_rioExplanationRequiredPermission": {
+        "hidden": true,
+        "generator": ["lorum-ipsum"]
+      },
+      "_rioRequiredPermissionRegistration": {
+        "hidden": true,
+        "generator": ["one-of", ["yes", "no"]]
+      },
+      "_rioRegistrationStatus": {
+        "hidden": true,
+        "generator": ["one-of", ["open", "closed"]]
+      },
+      "_rioConsumer": {
+        "hidden": true,
+        "generator": ["object-with-optionals", {"explanationRequiredPermission": 0.1, "requiredPermissionRegistration": 0.5},
+                      "consumerKey", "explanationRequiredPermission", "requiredPermissionRegistration", "registrationStatus",
+                      "rio"],
+        "deps": ["programOffering/_rioExplanationRequiredPermission", "programOffering/_rioRequiredPermissionRegistration", "programOffering/_rioRegistrationStatus"]
+      },
+      "consumers": {
+        "generator": ["arrayize"],
+        "deps": ["programOffering/_rioConsumer"]
       }
     }
   }, {
@@ -915,6 +1012,29 @@
         "deps": ["courseOffering/maxNumberStudents", "courseOffering/enrolledNumberStudents"],
         "generator": ["minus"],
         "hidden": true
+      },
+      "_rioExplanationRequiredPermission": {
+        "hidden": true,
+        "generator": ["lorum-ipsum"]
+      },
+      "_rioRequiredPermissionRegistration": {
+        "hidden": true,
+        "generator": ["one-of", ["yes", "no"]]
+      },
+      "_rioRegistrationStatus": {
+        "hidden": true,
+        "generator": ["one-of", ["open", "closed"]]
+      },
+      "_rioConsumer": {
+        "hidden": true,
+        "generator": ["object-with-optionals", {"explanationRequiredPermission": 0.1, "requiredPermissionRegistration": 0.5},
+                      "consumerKey", "explanationRequiredPermission", "requiredPermissionRegistration", "registrationStatus",
+                      "rio"],
+        "deps": ["courseOffering/_rioExplanationRequiredPermission", "courseOffering/_rioRequiredPermissionRegistration", "courseOffering/_rioRegistrationStatus"]
+      },
+      "consumers": {
+        "generator": ["arrayize"],
+        "deps": ["courseOffering/_rioConsumer"]
       }
     }
   }, {
@@ -1316,11 +1436,19 @@
           ["educationSpecification/organization", "organization/_linkDomain"], "educationSpecification/educationSpecificationId"
         ]
       },
+      "_rioEducationSpecificationSubType": {
+        "hidden": true,
+        "value": "variant"
+      },
+      "_rioCategory": {
+        "hidden": true,
+        "generator": ["at-least-one-of", ["business_and_project_support", "economy", "behavior_and_society", "healthcare_and_sport", "hobby_and_leisure_time", "agriculture_food_and_natural_environment", "management_and_project_management", "nature", "education", "law", "cross_sectoral", "language_and_culture", "technology_and_ict", "tourism_hospitality_and_recreation", "transport_and_logistics", "security_and_defense"]]
+      },
       "_consumer": {
-        "value": {
-          "consumerKey": "rio"
-        },
-        "hidden": true
+        "hidden": true,
+        "generator": ["object-with-optionals", {"educationSpecificationSubType": 0.2},
+                      "consumerKey", "educationSpecificationSubType", "category", "rio"],
+        "deps": ["educationSpecification/_rioEducationSpecificationSubType", "educationSpecification/_rioCategory"]
       },
       "consumers": {
         "generator": ["arrayize"],
@@ -1345,3 +1473,5 @@
     }
   }]
 }
+
+

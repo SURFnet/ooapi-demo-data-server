@@ -89,6 +89,27 @@
   (fn mapping [_ m k]
     (get m k #_(throw (ex-info "Incorrect mapping" {:m m :k k})))))
 
+#_(defmethod config/generator "optional" [_]
+    (fn optional [_ value chance]
+      (gen/weighted {(constantly nil) 10
+                     (constantly value) chance})))
+
+(defmethod config/generator "object-with-optionals" [_]
+  (fn object-with-optionals [_ choices & keyvals]
+    (assert (even? (count keyvals)))
+    (let [n (/ (count keyvals) 2)
+          ks (take n keyvals)
+          vs (->> keyvals
+                  (drop n)
+                  (take n))
+          result (zipmap ks vs)]
+      (->> (for [[k v] result]
+             (if-let [choice (get choices k)]
+               (when (> choice (gen/float)) [k v])
+               [k v]))
+           (remove nil?)
+           (into {})))))
+
 (defn modify-org-hack
   "Very ugly hack to make sure there is one root organization
   which has the env variables ORGNAME and SHORTORGNAME as its
