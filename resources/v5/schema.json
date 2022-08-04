@@ -337,34 +337,58 @@
         "generator": ["arrayize"],
         "deps": ["program/_coordinator"]
       },
-      "consumers": {
-        "generator": ["object", "consumerKey", "alliances"],
-        "deps": ["program/_consumerKey", "program/_AlliancesArray"]
-      },
       "validFrom": {
         "generator":  ["date", "1990-01-01", "2005-01-01"]
       },
-      "_AllianceName": {
+      "_allianceName": {
         "hidden": true,
         "generator": ["one-of", ["ewuu", "lde"]]
       },
-      "_AllianceTheme": {
+      "_allianceTheme": {
         "hidden": true,
         "generator": ["one-of", ["Circular Society", "Preventive Health", "Educational Science", "Humanities and Arts", "Social Sciences, Business and Law", "Science", "Engineering, Manufacturing and Construction", "Agriculture", "Health and Welfare", "Services"]]
       },
-      "_Alliance": {
+      "_allianceSelection": {
         "hidden": true,
-        "generator": ["object", "name", "theme"],
-        "deps": ["program/_AllianceName", "program/_AllianceTheme"]
+        "generator": ["boolean"]
       },
-      "_AlliancesArray": {
+      "_allianceType": {
+        "hidden": true,
+        "generator": ["one-of", ["broadening", "deepening"]]
+      },
+      "_allianceVisibleForOwnStudents": {
+        "hidden": true,
+        "generator": ["boolean"]
+      },
+      "_allianceEnrollmentForOwnStudents": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "broker": 9,
+          "url": 1
+        }]
+      },
+      "_allianceEnrollmentUrl": {
+        "hidden": true,
+        "value": "https://www.eigen-inschrijf-url.nl/schrijf-hier-in"
+      },
+      "_alliance": {
+        "hidden": true,
+        "generator": ["object", "name", "theme", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents", "enrollmentUrl"],
+        "deps": ["program/_allianceName", "program/_allianceTheme", "program/_allianceSelection", "program/_allianceType", "program/_allianceVisibleForOwnStudents", "program/_allianceEnrollmentForOwnStudents", "program/_allianceEnrollmentUrl"]
+      },
+      "_alliancesArray": {
         "hidden": true,
         "generator": ["arrayize"],
-        "deps": ["program/_Alliance"]
+        "deps": ["program/_alliance"]
       },
-      "_consumerKey": {
+      "_consumer": {
         "hidden": true,
-        "value": "eduxchange"
+        "generator": ["object", "consumerKey", "alliances", "eduxchange"],
+        "deps": ["program/_alliancesArray"]
+      },
+      "consumers": {
+        "generator": ["arrayize"],
+        "deps": ["program/_consumer"]
       },
       "_otherCode": {
         "generator": ["object", "codeType", "code", "croho"],
@@ -538,9 +562,55 @@
         "generator": ["arrayize"],
         "deps": ["course/_coordinator"] 
       },
+      "_allianceName": {
+        "hidden": true,
+        "generator": ["one-of", ["ewuu", "lde"]]
+      },
+      "_allianceTheme": {
+        "hidden": true,
+        "generator": ["one-of", ["Circular Society", "Preventive Health", "Educational Science", "Humanities and Arts", "Social Sciences, Business and Law", "Science", "Engineering, Manufacturing and Construction", "Agriculture", "Health and Welfare", "Services"]]
+      },
+      "_allianceSelection": {
+        "hidden": true,
+        "generator": ["boolean"]
+      },
+      "_allianceType": {
+        "hidden": true,
+        "generator": ["one-of", ["broadening", "deepening"]]
+      },
+      "_allianceVisibleForOwnStudents": {
+        "hidden": true,
+        "generator": ["boolean"]
+      },
+      "_allianceEnrollmentForOwnStudents": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "broker": 9,
+          "url": 1
+        }]
+      },
+      "_allianceEnrollmentUrl": {
+        "hidden": true,
+        "value": "https://www.eigen-inschrijf-url.nl/schrijf-hier-in"
+      },
+      "_alliance": {
+        "hidden": true,
+        "generator": ["object", "name", "theme", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents", "enrollmentUrl"],
+        "deps": ["course/_allianceName", "course/_allianceTheme", "course/_allianceSelection", "course/_allianceType", "course/_allianceVisibleForOwnStudents", "course/_allianceEnrollmentForOwnStudents", "course/_allianceEnrollmentUrl"]
+      },
+      "_alliancesArray": {
+        "hidden": true,
+        "generator": ["arrayize"],
+        "deps": ["course/_alliance"]
+      },
+      "_consumer": {
+        "hidden": true,
+        "generator": ["object", "consumerKey", "alliances", "eduxchange"],
+        "deps": ["course/_alliancesArray"]
+      },
       "consumers": {
-        "generator": ["object", "consumerKey", "alliances"],
-        "deps": [["course/_program", "program/_consumerKey"], ["course/_program", "program/_AlliancesArray"]]
+        "generator": ["arrayize"],
+        "deps": ["course/_consumer"]
       },
       "_nameFormat": {
         "hidden": true,
