@@ -20,8 +20,8 @@
         "generator": ["uuid"]
       },
       "primaryCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["organization/_codeType", "organization/_code"]
+        "generator": ["object", "codeType", "code", "brin"],
+        "deps": ["organization/_code"]
       },
       "organizationType": {
         "generator": ["one-of", ["root"]]
@@ -155,12 +155,8 @@
       },
       "_otherCode": {
         "hidden": true,
-        "generator": ["object", "codeType", "code"],
-        "deps": ["organization/_codeType", "organization/_code"]
-      },
-      "_codeType": {
-        "hidden": true,
-        "generator": ["one-of", ["brin"]]
+        "generator": ["object", "codeType", "code", "brin"],
+        "deps": ["organization/_code"]
       },
       "_code": {
         "hidden": true,
@@ -1054,13 +1050,9 @@
       "academicSessionType": {
         "generator": ["one-of", ["academic year","semester","trimester","quarter","testing period","period"]]
       },
-      "_codeType": {
-        "value": "identifier",
-        "hidden": true
-      },
       "primaryCode": {
-        "generator": ["object", "codeType", "code"],
-        "deps": ["academicSession/_codeType", "academicSession/academicSessionId"]
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["academicSession/academicSessionId"]
       },
       "name": {
         "generator": ["language-typed-string"],
@@ -1301,13 +1293,9 @@
       "educationSpecificationId": {
         "generator": ["uuid"]
       },
-      "_codeType": {
-        "value": "identifier",
-        "hidden": true
-      },
       "primaryCode": {
-        "generator": ["object"],
-        "deps": ["educationSpecification/_codeType", "educationSpecification/educationSpecificationId"]
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["educationSpecification/educationSpecificationId"]
       },
       "educationSpecificationType": {
         "generator": ["one-of", ["program", "privateProgram", "cluster", "course"]]
