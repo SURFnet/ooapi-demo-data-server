@@ -1,6 +1,8 @@
 FROM clojure:temurin-17-tools-deps-focal as builder
 RUN mkdir /app
 WORKDIR /app
+COPY ./deps.edn /app/deps.edn
+RUN clojure -P -Abuild
 COPY . /app/
 RUN clojure -T:build uberjar
 
