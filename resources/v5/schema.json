@@ -191,7 +191,7 @@
         "generator": ["uuid"]
       },
       "primaryCode": {
-        "generator": ["object", "codeType", "code", "croho"],
+        "generator": ["object", "codeType", "code", "crohoCreboCode"],
         "deps": ["program/_crohoCreboCode"]
       },
       "programType": {
@@ -323,7 +323,7 @@
       },
       "otherCodes": {
         "generator": ["arrayize"],
-        "deps": ["program/_otherCode"]
+        "deps": ["program/primaryCode"]
       },
       "addresses": {
         "generator": ["arrayize"],
@@ -437,11 +437,6 @@
       "consumers": {
         "generator": ["array"],
         "deps": ["program/_eduxchangeConsumer", "program/_rioConsumer"]
-      },
-      "_otherCode": {
-        "generator": ["object", "codeType", "code", "croho"],
-        "deps": ["program/_crohoCreboCode"],
-        "hidden": true
       },
       "_crohoCreboCode": {
         "hidden": true,
