@@ -333,8 +333,22 @@
         "generator": ["arrayize"],
         "deps": ["program/_coordinator"]
       },
+      "_validFrom": {
+        "generator": ["date", "1990-01-01", "2020-12-31"],
+        "hidden": true
+      },
+      "_validTo": {
+        "generator": ["later-date", 1000, 4000],
+        "hidden": true,
+        "deps": ["program/_validFrom"]
+      },
       "validFrom": {
-        "generator":  ["date", "1990-01-01", "2005-01-01"]
+        "generator": ["format", "%tF"],
+        "deps": ["program/_validFrom"]
+      },
+      "validTo": {
+        "generator": ["format", "%tF"],
+        "deps": ["program/_validTo"]
       },
       "_allianceName": {
         "hidden": true,
@@ -698,8 +712,9 @@
         "hidden": true
       },
       "_validTo": {
-        "generator": ["date", "1990-01-01", "2020-12-31"],
-        "hidden": true
+        "generator": ["later-date", 1000, 4000],
+        "hidden": true,
+        "deps": ["course/_validFrom"]
       },
       "validFrom": {
         "generator": ["format", "%tF"],
@@ -1442,8 +1457,9 @@
         "hidden": true
       },
       "_validTo": {
-        "generator": ["date", "1990-01-01", "2020-12-31"],
-        "hidden": true
+        "generator": ["later-date", 1000, 4000],
+        "hidden": true,
+        "deps": ["educationSpecification/_validFrom"]
       },
       "validFrom": {
         "generator": ["format", "%tF"],

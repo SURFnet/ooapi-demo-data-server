@@ -7,7 +7,8 @@
    [clojure.string :as str]
    [nl.surf.demo-data.config :as config]
    [nl.surf.demo-data.world :as world]
-   [remworks.markov-chain :as mc]))
+   [remworks.markov-chain :as mc])
+  (:import java.util.Calendar))
 
 ;; use ooapi version specific resource files
 (def ^:dynamic ooapi-version (or (System/getenv "OOAPI_VERSION") "v5"))
@@ -109,6 +110,16 @@
                [k v]))
            (remove nil?)
            (into {})))))
+
+(defmethod config/generator "later-date" [_]
+  (fn later-date
+    ([_ min-days max-days date]
+     (let [days-to-add (gen/uniform min-days max-days)
+           new-date (doto (.clone date) 
+                      (.add Calendar/DAY_OF_MONTH days-to-add))]
+       new-date))
+    ([world date]
+     (later-date world 1 365 date))))
 
 (defn modify-org-hack
   "Very ugly hack to make sure there is one root organization
