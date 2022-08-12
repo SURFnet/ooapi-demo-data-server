@@ -877,7 +877,7 @@
       },
       "_rioConsumer": {
         "hidden": true,
-        "generator": ["object-with-optionals", {"explanationRequiredPermission": 0.1, "requiredPermissionRegistration": 0.5},
+        "generator": ["object-with-optionals", {"explanationRequiredPermission": 0.1},
                       "consumerKey", "explanationRequiredPermission", "requiredPermissionRegistration", "registrationStatus",
                       "rio"],
         "deps": ["programOffering/_rioExplanationRequiredPermission", "programOffering/_rioRequiredPermissionRegistration", "programOffering/_rioRegistrationStatus"]
@@ -1033,7 +1033,7 @@
       },
       "_rioConsumer": {
         "hidden": true,
-        "generator": ["object-with-optionals", {"explanationRequiredPermission": 0.1, "requiredPermissionRegistration": 0.5},
+        "generator": ["object-with-optionals", {"explanationRequiredPermission": 0.1},
                       "consumerKey", "explanationRequiredPermission", "requiredPermissionRegistration", "registrationStatus",
                       "rio"],
         "deps": ["courseOffering/_rioExplanationRequiredPermission", "courseOffering/_rioRequiredPermissionRegistration", "courseOffering/_rioRegistrationStatus"]
