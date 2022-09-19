@@ -375,7 +375,7 @@
    "/programs/{programId}"                                                         {:ooapi/cardinality :one
                                                                                     :ooapi/datatype    :program
                                                                                     :ooapi/id-path     [:path-params :programId]
-                                                                                    :ooapi/expands     #{:program/parent :program/children :program/coordinator :program/organization :program/educationSpecification}}
+                                                                                    :ooapi/expands     #{:program/parent :program/children :program/coordinators :program/organization :program/educationSpecification}}
    "/programs/{programId}/programs"                                                {:ooapi/cardinality :many
                                                                                     :ooapi/datatype    :program
                                                                                     :ooapi/q-fields    #{:name :abbreviation :description}
