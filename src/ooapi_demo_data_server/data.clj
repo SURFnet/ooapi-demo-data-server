@@ -115,11 +115,22 @@
   (fn later-date
     ([_ min-days max-days date]
      (let [days-to-add (gen/uniform min-days max-days)
-           new-date (doto (.clone date) 
+           new-date (doto (.clone date)
                       (.add Calendar/DAY_OF_MONTH days-to-add))]
        new-date))
     ([world date]
      (later-date world 1 365 date))))
+
+(defmethod config/generator "ref-with-constraints" [_]
+  (fn ref-with-constraints
+    [context dep constraint & _deps]
+    (let [world (:world context)
+          dep (keyword dep)
+          entity-kw (-> dep namespace keyword)
+          candidates (get world entity-kw)
+          valid-candidates (filter (comp (set (second constraint)) (-> constraint first keyword)) candidates)]
+      (when-let [entity (first (gen/shuffle valid-candidates))]
+        [dep (get entity dep)]))))
 
 (defn modify-org-hack
   "Very ugly hack to make sure there is one root organization

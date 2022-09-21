@@ -175,8 +175,8 @@
         "hidden": true,
         "deps": ["person/personId"]
       },
-      "educationSpecification": {
-        "hidden": false,
+      "_educationSpecification": {
+        "hidden": true,
         "deps": ["educationSpecification/educationSpecificationId"]
       },
       "parent": {
@@ -189,6 +189,10 @@
     "attributes": {
       "programId": {
         "generator": ["uuid"]
+      },
+      "educationSpecification": {
+        "generator": ["ref-with-constraints", "educationSpecification/educationSpecificationId", ["educationSpecification/educationSpecificationType", ["program", "privateProgram", "cluster"]]],
+        "deps": [["program/_educationSpecification", "educationSpecification/educationSpecificationType"]]
       },
       "primaryCode": {
         "generator": ["object", "codeType", "code", "crohoCreboCode"],
@@ -491,14 +495,18 @@
         "hidden": true,
         "deps": ["person/personId"]
       },
-      "educationSpecification": {
-        "hidden": false,
+      "_educationSpecification": {
+        "hidden": true,
         "deps": ["educationSpecification/educationSpecificationId"]
       }
     },
     "attributes": {
       "courseId": {
         "generator": ["uuid"]
+      },
+      "educationSpecification": {
+        "generator": ["ref-with-constraints", "educationSpecification/educationSpecificationId", ["educationSpecification/educationSpecificationType", ["course"]]],
+        "deps": [["course/_educationSpecification", "educationSpecification/educationSpecificationType"]]
       },
       "primaryCode": {
         "generator": ["object", "codeType", "code", "identifier"],
