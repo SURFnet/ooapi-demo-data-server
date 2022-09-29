@@ -131,7 +131,7 @@
       },
       "_addressType": {
         "hidden": true,
-        "generator": ["one-of", ["postal", "visit", "deliveries"]]
+        "generator": ["one-of", ["teaching"]]
       },
       "_oneCap3": {
         "hidden": true,
@@ -381,14 +381,10 @@
           "url": 1
         }]
       },
-      "_allianceEnrollmentUrl": {
-        "hidden": true,
-        "value": "https://www.eigen-inschrijf-url.nl/schrijf-hier-in"
-      },
       "_alliance": {
         "hidden": true,
-        "generator": ["object", "name", "theme", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents", "enrollmentUrl"],
-        "deps": ["program/_allianceName", "program/_allianceTheme", "program/_allianceSelection", "program/_allianceType", "program/_allianceVisibleForOwnStudents", "program/_allianceEnrollmentForOwnStudents", "program/_allianceEnrollmentUrl"]
+        "generator": ["object", "name", "theme", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents"],
+        "deps": ["program/_allianceName", "program/_allianceTheme", "program/_allianceSelection", "program/_allianceType", "program/_allianceVisibleForOwnStudents", "program/_allianceEnrollmentForOwnStudents"]
       },
       "_alliancesArray": {
         "hidden": true,
@@ -654,14 +650,10 @@
           "url": 1
         }]
       },
-      "_allianceEnrollmentUrl": {
-        "hidden": true,
-        "value": "https://www.eigen-inschrijf-url.nl/schrijf-hier-in"
-      },
       "_alliance": {
         "hidden": true,
-        "generator": ["object", "name", "theme", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents", "enrollmentUrl"],
-        "deps": ["course/_allianceName", "course/_allianceTheme", "course/_allianceSelection", "course/_allianceType", "course/_allianceVisibleForOwnStudents", "course/_allianceEnrollmentForOwnStudents", "course/_allianceEnrollmentUrl"]
+        "generator": ["object", "name", "theme", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents"],
+        "deps": ["course/_allianceName", "course/_allianceTheme", "course/_allianceSelection", "course/_allianceType", "course/_allianceVisibleForOwnStudents", "course/_allianceEnrollmentForOwnStudents"]
       },
       "_alliancesArray": {
         "hidden": true,
@@ -854,7 +846,8 @@
         ]
       },
       "addresses": {
-        "deps": ["program/addresses"]
+        "generator": ["arrayize"],
+        "deps": [["programOffering/organization","organization/_address"]]
       },
       "_maxNumberPendingStudents": {
         "deps": ["programOffering/maxNumberStudents", "programOffering/enrolledNumberStudents"],
@@ -870,6 +863,30 @@
         "hidden": true,
         "generator": ["format", "%s"],
         "deps": [["programOffering/program","program/_crohoCreboCode"]]
+      },
+      "_allianceName": {
+        "hidden": true,
+        "generator": ["format", "%s"],
+        "deps": [["programOffering/program","program/_allianceName"]]
+      },
+      "_allianceEnrollmentUrl": {
+        "hidden": true,
+        "value": "https://www.eigen-inschrijf-url.nl/schrijf-hier-in"
+      },
+      "_alliance": {
+        "hidden": true,
+        "generator": ["object", "name", "enrollmentUrl"],
+        "deps": ["programOffering/_allianceName", "programOffering/_allianceEnrollmentUrl"]
+      },
+      "_alliancesArray": {
+        "hidden": true,
+        "generator": ["arrayize"],
+        "deps": ["programOffering/_alliance"]
+      },
+      "_eduxchangeConsumer": {
+        "hidden": true,
+        "generator": ["object", "consumerKey", "alliances", "eduxchange"],
+        "deps": ["programOffering/_alliancesArray"]
       },
       "_rioExplanationRequiredPermission": {
         "hidden": true,
@@ -891,8 +908,8 @@
         "deps": ["programOffering/_rioExplanationRequiredPermission", "programOffering/_rioRequiredPermissionRegistration", "programOffering/_rioRegistrationStatus"]
       },
       "consumers": {
-        "generator": ["arrayize"],
-        "deps": ["programOffering/_rioConsumer"]
+        "generator": ["array"],
+        "deps": ["programOffering/_eduxchangeConsumer", "programOffering/_rioConsumer"]
       }
     }
   }, {
@@ -1020,12 +1037,37 @@
         ]
       },
       "addresses": {
-        "deps": [["courseOffering/course", "course/addresses"]]
+        "generator": ["arrayize"],
+        "deps": [["courseOffering/organization", "organization/_address"]]
       },
       "_maxNumberPendingStudents": {
         "deps": ["courseOffering/maxNumberStudents", "courseOffering/enrolledNumberStudents"],
         "generator": ["minus"],
         "hidden": true
+      },
+      "_allianceName": {
+        "hidden": true,
+        "generator": ["format", "%s"],
+        "deps": [["courseOffering/course", "course/_allianceName"]]
+      },
+      "_allianceEnrollmentUrl": {
+        "hidden": true,
+        "value": "https://www.eigen-inschrijf-url.nl/schrijf-hier-in"
+      },
+      "_alliance": {
+        "hidden": true,
+        "generator": ["object", "name", "enrollmentUrl"],
+        "deps": ["courseOffering/_allianceName", "courseOffering/_allianceEnrollmentUrl"]
+      },
+      "_alliancesArray": {
+        "hidden": true,
+        "generator": ["arrayize"],
+        "deps": ["courseOffering/_alliance"]
+      },
+      "_eduxchangeConsumer": {
+        "hidden": true,
+        "generator": ["object", "consumerKey", "alliances", "eduxchange"],
+        "deps": ["courseOffering/_alliancesArray"]
       },
       "_rioExplanationRequiredPermission": {
         "hidden": true,
@@ -1047,8 +1089,8 @@
         "deps": ["courseOffering/_rioExplanationRequiredPermission", "courseOffering/_rioRequiredPermissionRegistration", "courseOffering/_rioRegistrationStatus"]
       },
       "consumers": {
-        "generator": ["arrayize"],
-        "deps": ["courseOffering/_rioConsumer"]
+        "generator": ["array"],
+        "deps": ["courseOffering/_eduxchangeConsumer", "courseOffering/_rioConsumer"]
       }
     }
   }, {
