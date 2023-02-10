@@ -370,10 +370,34 @@
         "generator": ["object", "name", "theme", "EWUU"],
         "deps": ["course/_EWUUTheme"]
       },
+      "_EUROTEQTheme": {
+        "hidden": true,
+        "generator": ["one-of", ["Architecture and Construction","Business and Economics","Chemistry and Biology","Computer Science and ICT, Data, AI","Electrical Engineering","Entrepreneurship","Food and Health Sciences, Medical engineering","Languages and Culture","Manufacturing and Processing","Mathematics and Statistics","Mechanical Engineering","Physics and Energy","Transport","Other subject area"]]
+      },
+      "_EUROTEQInstructor": {
+        "hidden": true,
+        "generator": ["one-of", ["John Smith","Jane Smith","John Doe","Jane Doe"]]
+      },
+      "_EUROTEQContacthours": {
+        "generator": ["int", 0, 10]
+      },
+      "_EUROTEQModeofdelivery": {
+        "hidden": true,
+        "generator": ["one-of", ["Online - at a specific time","Online - time-independent","Hybrid","Blended"]]
+      },
+      "_EUROTEQActivities": {
+        "hidden": true,
+        "generator": ["one-of", ["lectures and practises","lectures only","assessments"]]
+      },
+      "_EUROTEQTargetGroup": {
+        "hidden": true,
+        "generator": ["object", "name", "theme", "instructorNames", "contactHours", "modeOfDelivery", "activities", "euroteq"],
+        "deps": ["course/_EUROTEQTheme","course/_EUROTEQInstructor","course/_EUROTEQContacthours","course/_EUROTEQModeofdelivery","course/_EUROTEQActivities"]
+      },
       "_EWUUTargetGroupArray": {
         "hidden": true,
-        "generator": ["arrayize"],
-        "deps": ["course/_EWUUTargetGroup"]
+        "generator": ["array"],
+        "deps": ["course/_EWUUTargetGroup", "course/_EUROTEQTargetGroup"]
       },
       "ext": {
         "generator": ["object", "targetGroup"],
@@ -538,6 +562,30 @@
         "deps": [
           ["courseOffering/course", "course/abbreviation"]
         ]
+      },
+      "_startdate": {
+        "hidden": true,
+        "generator": ["date", "2022-09-01", "2022-12-31"]
+      },
+      "_enddate": {
+        "hidden": true,
+        "generator": ["date", "2023-01-01", "2023-08-01"]
+      },
+      "_enrollmenturl": {
+        "hidden": true,
+        "value": "https://my.institution.org/my-enrollment"
+      },
+      "_notificationurl": {
+        "hidden": true,
+        "value": "https://my.institution.org/my-notification"
+      },
+      "_datecomment": {
+        "hidden": true,
+        "generator": ["one-of", ["This date is in ECT.", "The course takes place on Monday morning."]]
+      },
+      "ext": {
+        "generator": ["object", "enrollmentStartDate", "enrollmentEndDate", "enrollmentUrl", "notificationUrl", "dateComment"],
+        "deps": ["courseOffering/_startdate","courseOffering/_enddate","courseOffering/_enrollmenturl","courseOffering/_notificationurl","courseOffering/_datecomment"]
       }
     }
   }, {

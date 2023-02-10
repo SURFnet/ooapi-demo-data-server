@@ -362,6 +362,10 @@
         "hidden": true,
         "generator": ["one-of", ["Circular Society", "Preventive Health", "Educational Science", "Humanities and Arts", "Social Sciences, Business and Law", "Science", "Engineering, Manufacturing and Construction", "Agriculture", "Health and Welfare", "Services"]]
       },
+      "_allianceThemeNr": {
+        "hidden": true,
+        "generator": ["one-of", ["10","11","12","13","14","15","16","17","18","19"]]
+      },
       "_allianceSelection": {
         "hidden": true,
         "generator": ["boolean"]
@@ -384,7 +388,7 @@
       "_alliance": {
         "hidden": true,
         "generator": ["object", "name", "theme", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents"],
-        "deps": ["program/_allianceName", "program/_allianceTheme", "program/_allianceSelection", "program/_allianceType", "program/_allianceVisibleForOwnStudents", "program/_allianceEnrollmentForOwnStudents"]
+        "deps": ["program/_allianceName", "program/_allianceThemeNr", "program/_allianceSelection", "program/_allianceType", "program/_allianceVisibleForOwnStudents", "program/_allianceEnrollmentForOwnStudents"]
       },
       "_alliancesArray": {
         "hidden": true,
@@ -821,11 +825,15 @@
           ["programOffering/academicSession", "academicSession/endDate"]
         ]
       },
-      "enrollStartDate": {
+      "_enrollStartDate": {
+        "hidden": true,
         "generator": ["format", "%tF"],
         "deps": [
           ["programOffering/academicSession", "academicSession/startDate"]
         ]
+      },
+      "enrollStartDate": {
+        "value": "2023-02-10"
       },
       "enrollEndDate": {
         "generator": ["format", "%tF"],
@@ -873,10 +881,14 @@
         "hidden": true,
         "value": "https://www.eigen-inschrijf-url.nl/schrijf-hier-in"
       },
+      "_allianceEnrollStartTime": {
+        "hidden": true,
+        "generator": ["one-of", ["00:00","01:00","02:00","03:00","04:00","05:00","06:00","07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"]]
+      },
       "_alliance": {
         "hidden": true,
-        "generator": ["object", "name", "enrollmentUrl"],
-        "deps": ["programOffering/_allianceName", "programOffering/_allianceEnrollmentUrl"]
+        "generator": ["object", "name", "enrollmentUrl","enrollStartTime"],
+        "deps": ["programOffering/_allianceName", "programOffering/_allianceEnrollmentUrl", "programOffering/_allianceEnrollStartTime"]
       },
       "_alliancesArray": {
         "hidden": true,
