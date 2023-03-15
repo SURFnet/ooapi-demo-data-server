@@ -833,7 +833,7 @@
         ]
       },
       "enrollStartDate": {
-        "value": "2023-03-15"
+        "value": "2023-03-17"
       },
       "_enrollEndDate": {
         "generator": ["format", "%tF"],
@@ -842,7 +842,7 @@
         ]
       },
       "enrollEndDate": {
-        "value": "2023-03-15"
+        "value": "2023-03-20"
       },
       "flexibleEntryPeriodStart": {
         "generator": ["format", "%tF"],
@@ -886,11 +886,11 @@
       },
       "_allianceEnrollStartTime": {
         "hidden": true,
-        "generator": ["one-of", ["9:00"]]
+        "generator": ["one-of", ["9:00:00"]]
       },
       "_allianceEnrollEndTime": {
         "hidden": true,
-        "generator": ["one-of", ["11:00","12:00"]]
+        "generator": ["one-of", ["11:00:00","12:00:00"]]
       },
       "_alliance": {
         "hidden": true,
