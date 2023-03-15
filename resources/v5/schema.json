@@ -785,13 +785,14 @@
         "generator": ["at-least-one-of", ["distance-learning", "on campus", "online", "hybrid", "situated"]]
       },
       "maxNumberStudents": {
-        "value": 50
+        "generator": ["int-cubic", 5, 180]
       },
       "enrolledNumberStudents": {
-        "generator": ["one-of", [49, 50]]
+        "deps": ["programOffering/maxNumberStudents"],
+        "generator": ["int", 0]
       },
       "pendingNumberStudents": {
-        "value": 0
+        "generator": ["int", 0, 10]
       },
       "minNumberStudents": {
         "generator": ["int", 1, 5]
