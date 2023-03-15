@@ -785,14 +785,13 @@
         "generator": ["at-least-one-of", ["distance-learning", "on campus", "online", "hybrid", "situated"]]
       },
       "maxNumberStudents": {
-        "generator": ["int-cubic", 5, 180]
+        "value": 50
       },
       "enrolledNumberStudents": {
-        "deps": ["programOffering/maxNumberStudents"],
-        "generator": ["int", 0]
+        "generator": ["one-of", [49, 50]]
       },
       "pendingNumberStudents": {
-        "generator": ["int", 0, 10]
+        "value": 0
       },
       "minNumberStudents": {
         "generator": ["int", 1, 5]
@@ -833,7 +832,7 @@
         ]
       },
       "enrollStartDate": {
-        "value": "2023-03-17"
+        "value": "2023-01-01"
       },
       "_enrollEndDate": {
         "generator": ["format", "%tF"],
@@ -842,7 +841,7 @@
         ]
       },
       "enrollEndDate": {
-        "value": "2023-03-20"
+        "value": "2023-12-31"
       },
       "flexibleEntryPeriodStart": {
         "generator": ["format", "%tF"],
