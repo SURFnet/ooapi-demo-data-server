@@ -835,11 +835,14 @@
       "enrollStartDate": {
         "value": "2023-02-10"
       },
-      "enrollEndDate": {
+      "_enrollEndDate": {
         "generator": ["format", "%tF"],
         "deps": [
           ["programOffering/academicSession", "academicSession/endDate"]
         ]
+      },
+      "enrollEndDate": {
+        "value": "2023-03-15"
       },
       "flexibleEntryPeriodStart": {
         "generator": ["format", "%tF"],
