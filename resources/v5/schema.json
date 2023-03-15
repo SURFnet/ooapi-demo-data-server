@@ -894,7 +894,7 @@
       },
       "_alliance": {
         "hidden": true,
-        "generator": ["object", "name", "enrollmentUrl","enrollStartTime"],
+        "generator": ["object", "name", "enrollmentUrl","enrollStartTime","enrollEndTime"],
         "deps": ["programOffering/_allianceName", "programOffering/_allianceEnrollmentUrl", "programOffering/_allianceEnrollStartTime", "programOffering/_allianceEnrollEndTime"]
       },
       "_alliancesArray": {
