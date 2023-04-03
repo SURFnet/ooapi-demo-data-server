@@ -833,7 +833,7 @@
         ]
       },
       "enrollStartDate": {
-        "value": "2023-01-01"
+        "value": "2023-04-03"
       },
       "_enrollEndDate": {
         "generator": ["format", "%tF"],
@@ -886,11 +886,11 @@
       },
       "_allianceEnrollStartTime": {
         "hidden": true,
-        "generator": ["one-of", ["9:00:00"]]
+        "generator": ["one-of", ["11:05:00"]]
       },
       "_allianceEnrollEndTime": {
         "hidden": true,
-        "generator": ["one-of", ["11:00:00","12:00:00"]]
+        "generator": ["one-of", ["12:00:00","13:00:00"]]
       },
       "_alliance": {
         "hidden": true,
