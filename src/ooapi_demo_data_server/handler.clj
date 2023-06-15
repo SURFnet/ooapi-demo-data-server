@@ -10,8 +10,7 @@
    [ooapi-demo-data-server.data :as data]
    [ooapi-demo-data-server.common :as common]
    [reitit.ring :as ring]
-   [reitit.ring.middleware.dev]
-   [reitit.ring.middleware.parameters :refer [parameters-middleware]]))
+   [ring.middleware.params :as params]))
 
 (defmulti coerce-parameter (fn [schema _] (:type schema)))
 
@@ -394,6 +393,21 @@
   [handler]
   (fn [req]
     (handler (assoc req :ooapi-version data/ooapi-version))))
+
+(def parameters-middleware
+  "Middleware to parse urlencoded parameters from the query string and form
+  body (if the request is a url-encoded form). Adds the following keys to
+  the request map:
+
+  :query-params - a map of parameters from the query string
+  :form-params  - a map of parameters from the body
+  :params       - a merged map of all types of parameter"
+  {:name ::parameters
+   :compile (fn [{:keys [parameters]} _]
+              (if (and (some? (:form parameters)) (nil? (:body parameters)))
+                {:data {:swagger {:consumes ["application/x-www-form-urlencoded"]}}}
+                {}))
+   :wrap params/wrap-params})
 
 (defn router
   []

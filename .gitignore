@@ -4,3 +4,4 @@
 .env
 .lsp
 target/
+.clj-kondo/

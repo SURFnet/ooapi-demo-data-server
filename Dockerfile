@@ -6,7 +6,7 @@ RUN clojure -P -Abuild
 COPY . /app/
 RUN clojure -T:build uberjar
 
-FROM gcr.io/distroless/java17-debian11
+FROM gcr.io/distroless/java17-debian11:latest
 COPY --from=builder /app/target/ooapi-demo-data-server.jar /ooapi-demo-data-server.jar
 COPY HealthCheck.java .
 EXPOSE 8080
