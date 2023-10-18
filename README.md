@@ -42,3 +42,6 @@ Chaos mode was added to how well applications can handle malfunctioning OOAPI en
 - `slow`: Requests are handled normally, but with a randomly chosen delay between 3 and 63 seconds.
 
 Which modes are active can be chosen by setting the environment variable `CHAOS_MODES` to a comma-delimited string of modes. This defaults to `normal,empty,slow`.
+
+# Reporting vulnerabilities
+If you have found a vulnerability in the code, we would like to hear about it so that we can take appropriate measures as quickly as possible. We are keen to cooperate with you to protect users and systems better. See https://www.surf.nl/.well-known/security.txt for information on how to report vulnerabilities responsibly.
