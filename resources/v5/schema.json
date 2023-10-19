@@ -91,9 +91,14 @@
         "generator": ["sanitize"],
         "deps": ["organization/_name"]
       },
-      "_addressStreetNumber": {
+      "_addressStreetNumberInt": {
         "hidden": true,
         "generator": ["int", 1, 200]
+      },
+      "_addressStreetNumber": {
+        "hidden": true,
+        "generator": ["format", "%d"],
+        "deps": ["organization/_addressStreetNumberInt"]
       },
       "_addressGeoLocationLon": {
         "hidden": true,
@@ -147,7 +152,7 @@
       },
       "_addressAdditional": {
         "hidden": true,
-        "generator": ["one-of", ["", "a", "b"]]
+        "generator": ["language-typed-string", "boven"]
       },
       "_oneCap4": {
         "hidden": true,
@@ -468,7 +473,7 @@
       "_studyLoadUnit": {
         "hidden": true,
         "generator": ["weighted", {
-          "contactitem": 1,
+          "contacttime": 1,
           "ects": 10,
           "sbu": 1,
           "sp":1,
@@ -1474,7 +1479,7 @@
       "_studyLoadUnit": {
         "hidden": true,
         "generator": ["weighted", {
-          "contactitem": 1,
+          "contacttime": 1,
           "ects": 10,
           "sbu": 1,
           "sp":1,

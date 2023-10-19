@@ -139,11 +139,20 @@
   [data]
   (let [org-name (or (System/getenv "ORGNAME") "RootOrganisatie")
         short-org-name (or (System/getenv "SHORTORGNAME") "RO")
-        is-root? (comp #{"root"} :organization/type)
+        is-root? (comp #{"root"} (case ooapi-version
+                                   "v4" :organization/type
+                                   "v5" :organization/organizationType))
         root-orgs (->> data :organization (filter is-root?))
-        root (-> (first root-orgs)
-                 (assoc :organization/name org-name)
-                 (assoc :organization/shortName short-org-name))
+        root (cond-> (first root-orgs)
+
+               (= ooapi-version "v4")
+               (assoc :organization/name org-name)
+
+               (= ooapi-version "v5")
+               (assoc :organization/name (to-language-typed-string org-name))
+
+               true
+               (assoc :organization/shortName short-org-name))
         rest-orgs (->> (rest root-orgs)
                        (map #(assoc % :organization/type "department")))
         orgs (->> data

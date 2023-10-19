@@ -21,3 +21,9 @@
                  (ig/init (system/prep :prod)))]
     (log/info :ooapi-demo-data-server/seed {:seed s})
     system))
+
+(comment
+  (def system
+    (ig/init (system/prep :prod)))
+
+  )
