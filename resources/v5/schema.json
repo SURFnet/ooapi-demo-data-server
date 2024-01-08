@@ -371,6 +371,10 @@
         "hidden": true,
         "generator": ["one-of", ["10","11","12","13","14","15","16","17","18","19"]]
       },
+      "_allianceThemeNrs": {
+        "hidden": true,
+        "generator": ["at-least-one-of", ["10","11","12","13","14","15","16","17","18","19"]]
+      },
       "_allianceSelection": {
         "hidden": true,
         "generator": ["boolean"]
@@ -390,10 +394,25 @@
           "url": 1
         }]
       },
+      "_allianceVisibleForGuests": {
+        "hidden": true,
+        "generator": ["boolean"]
+      },
+      "_allianceEnrollmentForGuests": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "broker": 9,
+          "url": 1
+        }]
+      },
+      "_allianceJointPartnerCodes": {
+        "hidden": true,
+        "generator": ["zero-or-more-of", ["21PB", "21PF", "21PE"]]
+      },
       "_alliance": {
         "hidden": true,
-        "generator": ["object", "name", "theme", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents"],
-        "deps": ["program/_allianceName", "program/_allianceThemeNr", "program/_allianceSelection", "program/_allianceType", "program/_allianceVisibleForOwnStudents", "program/_allianceEnrollmentForOwnStudents"]
+        "generator": ["object", "name", "theme", "themes", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents", "jointPartnerCodes", "visibleForGuests", "enrollmentForGuests"],
+        "deps": ["program/_allianceName", "program/_allianceThemeNr", "program/_allianceThemeNrs", "program/_allianceSelection", "program/_allianceType", "program/_allianceVisibleForOwnStudents", "program/_allianceEnrollmentForOwnStudents", "program/_allianceJointPartnerCodes", "program/_allianceVisibleForGuests", "program/_allianceEnrollmentForGuests"]
       },
       "_alliancesArray": {
         "hidden": true,
@@ -640,6 +659,10 @@
         "hidden": true,
         "generator": ["one-of", ["Circular Society", "Preventive Health", "Educational Science", "Humanities and Arts", "Social Sciences, Business and Law", "Science", "Engineering, Manufacturing and Construction", "Agriculture", "Health and Welfare", "Services"]]
       },
+      "_allianceThemes": {
+        "hidden": true,
+        "generator": ["at-least-one-of", ["Circular Society", "Preventive Health", "Educational Science", "Humanities and Arts", "Social Sciences, Business and Law", "Science", "Engineering, Manufacturing and Construction", "Agriculture", "Health and Welfare", "Services"]]
+      },
       "_allianceSelection": {
         "hidden": true,
         "generator": ["boolean"]
@@ -659,10 +682,25 @@
           "url": 1
         }]
       },
+      "_allianceVisibleForGuests": {
+        "hidden": true,
+        "generator": ["boolean"]
+      },
+      "_allianceEnrollmentForGuests": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "broker": 9,
+          "url": 1
+        }]
+      },
+      "_allianceJointPartnerCodes": {
+        "hidden": true,
+        "generator": ["zero-or-more-of", ["21PB", "21PF", "21PE"]]
+      },
       "_alliance": {
         "hidden": true,
-        "generator": ["object", "name", "theme", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents"],
-        "deps": ["course/_allianceName", "course/_allianceTheme", "course/_allianceSelection", "course/_allianceType", "course/_allianceVisibleForOwnStudents", "course/_allianceEnrollmentForOwnStudents"]
+        "generator": ["object", "name", "theme", "themes", "selection", "type", "visibleForOwnStudents", "enrollmentForOwnStudents", "jointPartnerCodes", "visibleForGuests", "enrollmentForGuests"],
+        "deps": ["course/_allianceName", "course/_allianceTheme", "course/_allianceThemes", "course/_allianceSelection", "course/_allianceType", "course/_allianceVisibleForOwnStudents", "course/_allianceEnrollmentForOwnStudents", "course/_allianceJointPartnerCodes", "course/_allianceVisibleForGuests", "course/_allianceEnrollmentForGuests"]
       },
       "_alliancesArray": {
         "hidden": true,
@@ -889,6 +927,10 @@
         "hidden": true,
         "value": "https://www.eigen-inschrijf-url.nl/schrijf-hier-in"
       },
+      "_allianceEnrollmentUrlForGuests": {
+        "hidden": true,
+        "value": "https://www.eigen-inschrijf-url-voor-gasten.nl/gasten-schrijven-zich-hier-in"
+      },
       "_allianceEnrollStartTime": {
         "hidden": true,
         "generator": ["one-of", ["9:00:00"]]
@@ -899,8 +941,8 @@
       },
       "_alliance": {
         "hidden": true,
-        "generator": ["object", "name", "enrollmentUrl","enrollStartTime","enrollEndTime"],
-        "deps": ["programOffering/_allianceName", "programOffering/_allianceEnrollmentUrl", "programOffering/_allianceEnrollStartTime", "programOffering/_allianceEnrollEndTime"]
+        "generator": ["object", "name", "enrollmentUrl","enrollStartTime","enrollEndTime", "enrollmentUrlForGuests"],
+        "deps": ["programOffering/_allianceName", "programOffering/_allianceEnrollmentUrl", "programOffering/_allianceEnrollStartTime", "programOffering/_allianceEnrollEndTime", "programOffering/_allianceEnrollmentUrlForGuests"]
       },
       "_alliancesArray": {
         "hidden": true,
@@ -1078,10 +1120,14 @@
         "hidden": true,
         "value": "https://www.eigen-inschrijf-url.nl/schrijf-hier-in"
       },
+      "_allianceEnrollmentUrlForGuests": {
+        "hidden": true,
+        "value": "https://www.eigen-inschrijf-url-voor-gasten.nl/gasten-schrijven-zich-hier-in"
+      },
       "_alliance": {
         "hidden": true,
-        "generator": ["object", "name", "enrollmentUrl"],
-        "deps": ["courseOffering/_allianceName", "courseOffering/_allianceEnrollmentUrl"]
+        "generator": ["object", "name", "enrollmentUrl", "enrollmentUrlForGuests"],
+        "deps": ["courseOffering/_allianceName", "courseOffering/_allianceEnrollmentUrl", "courseOffering/_allianceEnrollmentUrlForGuests"]
       },
       "_alliancesArray": {
         "hidden": true,

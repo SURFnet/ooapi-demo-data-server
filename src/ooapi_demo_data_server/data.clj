@@ -7,7 +7,8 @@
    [clojure.string :as str]
    [nl.surf.demo-data.config :as config]
    [nl.surf.demo-data.world :as world]
-   [remworks.markov-chain :as mc])
+   [remworks.markov-chain :as mc]
+   [ooapi-demo-data-server.common :as common])
   (:import java.util.Calendar))
 
 ;; use ooapi version specific resource files
@@ -61,6 +62,16 @@
     (when (seq xs)
       (let [n (gen/uniform 1 (count xs))]
         (take n (gen/shuffle xs))))))
+
+; This function has a 50% chance of returing zero items
+(defmethod config/generator "zero-or-more-of" [_]
+  (fn zero-or-more-of [_ xs]
+    (when (seq xs)
+      (let [pick? (gen/boolean)
+            n (gen/uniform 1 (inc (count xs)))]
+        (if pick?
+          (take n (gen/shuffle xs))
+          '())))))
 
 (defmethod config/generator "array" [_]
   (fn array [_ & xs]
@@ -194,38 +205,38 @@
 
 (defn generate-data
   []
-  (-> schema-file
-      (io/resource)
-      (slurp)
-      (config/load-json)
-      (world/gen (-> pop-file
-                     (io/resource)
-                     (slurp)
-                     (edn/read-string)))))
+  (let [data (-> schema-file
+                 (io/resource)
+                 (slurp)
+                 (config/load-json)
+                 (world/gen (-> pop-file
+                                (io/resource)
+                                (slurp)
+                                (edn/read-string))))]
+    (cond-> data
 
-(def data
-  (cond-> (generate-data)
+      true
+      (modify-org-hack)
 
-    true
-    (modify-org-hack)
+      (= ooapi-version "v5")
+      (clean-empty-parents :educationSpecification :educationSpecification/parent)
 
-    (= ooapi-version "v5")
-    (clean-empty-parents :educationSpecification :educationSpecification/parent)
+      (= ooapi-version "v5")
+      (add-children-attr :educationSpecification :educationSpecification/educationSpecificationId :educationSpecification/parent :educationSpecification/children)
 
-    (= ooapi-version "v5")
-    (add-children-attr :educationSpecification :educationSpecification/educationSpecificationId :educationSpecification/parent :educationSpecification/children)
+      (= ooapi-version "v5")
+      (clean-empty-parents :academicSession :academicSession/parent)
 
-    (= ooapi-version "v5")
-    (clean-empty-parents :academicSession :academicSession/parent)
+      (= ooapi-version "v5")
+      (add-children-attr :academicSession :academicSession/academicSessionId :academicSession/parent :academicSession/children)
 
-    (= ooapi-version "v5")
-    (add-children-attr :academicSession :academicSession/academicSessionId :academicSession/parent :academicSession/children)
+      (= ooapi-version "v5")
+      (clean-empty-parents :program :program/parent)
 
-    (= ooapi-version "v5")
-    (clean-empty-parents :program :program/parent)
+      (= ooapi-version "v5")
+      (add-children-attr :program :program/programId :program/parent :program/children))))
 
-    (= ooapi-version "v5")
-    (add-children-attr :program :program/programId :program/parent :program/children)))
+(def data (generate-data))
 
 (def schema (json/parse-string (slurp (io/resource ooapi-file))
                                #(if (str/starts-with? % "/") % (keyword %))))
@@ -496,3 +507,29 @@
   (->> (routes)
        first
        :parameters))
+
+(comment
+  (def test-data (generate-data))
+
+  (keys test-data)
+
+  (->> test-data
+       :courseOffering
+       rand-nth
+       :courseOffering/consumers)
+
+
+  (def test-schema
+    (-> schema-file
+        (io/resource)
+        (slurp)
+        (json/parse-string true)))
+
+  (require '[ooapi-demo-data-server.common :as common])
+
+  (->> test-schema
+       :types
+       (common/index-by (comp keyword :name))
+       :courseOffering
+       :attributes)
+  )
