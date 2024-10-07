@@ -1,4 +1,4 @@
-FROM clojure:temurin-17-tools-deps-focal as builder
+FROM clojure:temurin-21-tools-deps-noble as builder
 RUN mkdir /app
 WORKDIR /app
 COPY ./deps.edn /app/deps.edn
@@ -6,7 +6,7 @@ RUN clojure -P -A:build
 COPY . /app/
 RUN clojure -T:build uberjar
 
-FROM gcr.io/distroless/java17-debian11:latest
+FROM gcr.io/distroless/java21-debian12
 COPY --from=builder /app/target/ooapi-demo-data-server.jar /ooapi-demo-data-server.jar
 COPY HealthCheck.java .
 EXPOSE 8080
