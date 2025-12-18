@@ -1,0 +1,9 @@
+{:service 1
+ :organisation 1
+ :academicSession 5
+ :programme 30
+ :programmeOffering 90
+ :programOfferingAssociation 50
+ :course 40 
+ :courseOffering 120
+ :person 200}

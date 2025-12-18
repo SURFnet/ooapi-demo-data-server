@@ -1,6 +1,6 @@
 const fs = require('fs');
-const f_in = "./ooapiv5-refs.json";
-const f_out = "./ooapiv5-norefs.json";
+const f_in = "./v6.json";
+const f_out = "./ooapiv6-norefs.json";
 
 // read file in
 let json = require(f_in);
