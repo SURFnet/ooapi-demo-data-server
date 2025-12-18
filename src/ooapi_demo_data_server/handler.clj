@@ -2,7 +2,7 @@
   (:require
    [cheshire.core :as json]
    [cheshire.generate :as jsong]
-   [clojure.instant :refer [read-instant-date]]
+   [clojure.instant :refer [read-instant-date read-instant-calendar]]
    [clojure.string :as str]
    [clojure.set :refer [rename-keys intersection difference]]
    [integrant.core :as ig]
@@ -42,6 +42,12 @@
   [_ s]
   (when s
     (read-instant-date s)))
+
+
+(defmethod parse-string "date-time"
+  [_ s]
+  (when s
+    (read-instant-calendar s)))
 
 (defmethod coerce-parameter "string"
   [{:keys [enum format default]} value]
@@ -178,8 +184,12 @@
       (get data/data datatype))))
 
 (jsong/add-encoder java.util.GregorianCalendar
-                   (fn [c jsonGenerator]
-                     (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") (.getTime c)))))
+                   (if (= data/ooapi-version "v6") 
+                     (fn [c jsonGenerator]
+                       (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssXXX") (.getTime c)))) 
+                     (fn [c jsonGenerator]
+                       (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") (.getTime c)))))
+                   )
 
 (defn single-ref?
   [x]
@@ -235,7 +245,7 @@
     "v4"
     (dissoc item attr)
 
-    "v5"
+    (or "v5" "v6")
     (if-let [current-value (get item attr)]
       (let [new-value (if (many-ref? current-value)
                         (map second current-value)
@@ -297,6 +307,7 @@
         (#(expand-item-attrs % attrs-to-expand))
         (#(clean-item-attrs % attrs-to-clean)))))
 
+
 (defn many-handler
   [{:keys [ooapi-version] :as req}]
   (let [page-size (get-in req [:query-params :pageSize])
@@ -308,13 +319,13 @@
                             (map (partial expand-item req))
                             (map clean-item))
         total-pages (calc-total-pages page-size (count filtered-items))
-        v5? (= ooapi-version "v5")]
+        supports-pagination? (or (= ooapi-version "v5") (= ooapi-version "v6"))]
     (cond-> {:pageSize page-size
              :pageNumber page-number
              :items (apply-pagination page-size page-number filtered-items)}
-      v5? (assoc :hasPreviousPage (> 1 page-number)
-                 :hasNextPage (< page-number total-pages)
-                 :totalPages total-pages))))
+      supports-pagination? (assoc :hasPreviousPage (> 1 page-number)
+                                  :hasNextPage (< page-number total-pages)
+                                  :totalPages total-pages))))
 
 (defn get-item-in-one
   [req]
@@ -430,49 +441,47 @@
       (create-chaos-handler normal-handler modes)
       normal-handler)))
 
-(comment
+;;  (defn try-app
+;;     ([uri query-string]
+;;      (let [app (ring/ring-handler (router))
+;;            request {:request-method :get
+;;                     :uri uri
+;;                     :query-string query-string}
+;;            response-str (:body (app request))]
+;;        (json/parse-string response-str)))
+;;     ([uri]
+;;      (try-app uri nil)))
 
-  (defn try-app
-    ([uri query-string]
-     (let [app (ring/ring-handler (router))
-           request {:request-method :get
-                    :uri uri
-                    :query-string query-string}
-           response-str (:body (app request))]
-       (json/parse-string response-str)))
-    ([uri]
-     (try-app uri nil)))
+;;   (try-app "/organisations")
 
-  (try-app "/courses")
+;;   (try-app "/courses" "pageSize=20")
 
-  (try-app "/courses" "pageSize=20")
+;;   (try-app "/courses/fa00a62b-525b-19df-8a3c-47434a535c55" "expand=coordinators")
 
-  (try-app "/courses/fa00a62b-525b-19df-8a3c-47434a535c55" "expand=coordinators")
+;;   (try-app "/education-specifications")
 
-  (try-app "/education-specifications")
+;;   ; no children 465b8146-59e1-a484-c72c-15b9d73e6f71
+;;   (try-app "/education-specifications/465b8146-59e1-a484-c72c-15b9d73e6f71" "expand=children")
 
-  ; no children 465b8146-59e1-a484-c72c-15b9d73e6f71
-  (try-app "/education-specifications/465b8146-59e1-a484-c72c-15b9d73e6f71" "expand=children")
+;;   ; with children fdc89678-1688-ce14-d649-6bcebac7f652
+;;   (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652" "expand=children")
+;;   (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652")
 
-  ; with children fdc89678-1688-ce14-d649-6bcebac7f652
-  (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652" "expand=children")
-  (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652")
+;;   ; with parent 7f4b5fab-3020-06b9-ac67-4e81352ceed1
+;;   (try-app "/education-specifications/7f4b5fab-3020-06b9-ac67-4e81352ceed1" "expand=parent")
+;;   (try-app "/education-specifications/7f4b5fab-3020-06b9-ac67-4e81352ceed1")
 
-  ; with parent 7f4b5fab-3020-06b9-ac67-4e81352ceed1
-  (try-app "/education-specifications/7f4b5fab-3020-06b9-ac67-4e81352ceed1" "expand=parent")
-  (try-app "/education-specifications/7f4b5fab-3020-06b9-ac67-4e81352ceed1")
+;;   ; no parent fdc89678-1688-ce14-d649-6bcebac7f652
+;;   (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652" "expand=parent")
 
-  ; no parent fdc89678-1688-ce14-d649-6bcebac7f652
-  (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652" "expand=parent")
+;;   (try-app "/courses/a33cbd99-c437-3cee-d2e4-f5517958fd6c/offerings" #_"expand=parent")
 
-  (try-app "/courses/a33cbd99-c437-3cee-d2e4-f5517958fd6c/offerings" #_"expand=parent")
+;;   (try-app "/offerings/e4ddcd1b-c4b3-ff68-a21d-81e40b478c23" "expand=course")
 
-  (try-app "/offerings/e4ddcd1b-c4b3-ff68-a21d-81e40b478c23" "expand=course")
+;;   (->> data/data
+;;        :educationSpecification
+;;        (filter (comp #{#uuid "fdc89678-1688-ce14-d649-6bcebac7f652"} :educationSpecification/educationSpecificationId))
+;;        first)
 
-  (->> data/data
-       :educationSpecification
-       (filter (comp #{#uuid "fdc89678-1688-ce14-d649-6bcebac7f652"} :educationSpecification/educationSpecificationId))
-       first)
-
-  (count (:course data/data))
-  )
+;;   (count (:course data/data))
+ 

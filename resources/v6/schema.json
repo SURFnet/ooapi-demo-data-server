@@ -1,0 +1,1078 @@
+{
+  "types": [
+  {
+    "name": "service",
+    "attributes": {
+      "contactEmail": {
+        "value": "support@surfeduhub.nl"
+      },
+      "specification": {
+        "value": "https://open-education-api.github.io/specification/v6/docs.html"
+      },
+      "documentation": {
+        "value": "https://open-education-api.github.io/specification"
+      }
+    }
+  },
+  {
+    "name": "organisation",
+    "attributes": {
+      "organisationId": {
+        "generator": ["uuid"]
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code", "institution_code"],
+        "deps": ["organisation/_code"]
+      },
+      "organisationType": {
+        "generator": ["one-of", ["root"]]
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["organisation/_name"]
+      },
+      "_name": {
+        "generator": ["format", "%s van %s"],
+        "deps": ["organisation/_nameType", "organisation/_addressCity"],
+        "hidden": true
+      },
+      "shortName": {
+        "generator": ["abbreviate"],
+        "deps": ["organisation/_name"],
+        "constraints": ["unique"]
+      },
+      "description": {
+        "generator": ["language-typed-string"],
+        "deps": ["organisation/_description"]
+      },
+      "_description": {
+        "generator": ["lorem-surf"],
+        "hidden": true
+      },
+      "addresses": {
+        "generator": ["arrayize"],
+        "deps": ["organisation/_address"]
+      },
+      "link": {
+        "generator": ["format", "https://%s/"],
+        "deps": ["organisation/_linkDomain"]
+      },
+      "logo": {
+        "generator": ["format", "https://%s/images/logo.png"],
+        "deps": ["organisation/_linkDomain"]
+      },
+      "otherCodes": {
+        "generator": ["arrayize"],
+        "deps": ["organisation/_otherCode"]
+      },
+      "_oneCap1": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_oneInt": {
+        "hidden": true,
+        "generator": ["char", "0", "9"]
+      },
+      "_address": {
+        "hidden": true,
+        "generator": ["object", "addressType", "street", "streetNumber", "additional", "postalCode", "city", "countryCode", "geoLocation"],
+        "deps": ["organisation/_addressType", "organisation/_addressStreet", "organisation/_addressStreetNumber", "organisation/_addressAdditional", "organisation/_addressPostalCode", "organisation/_addressCity", "organisation/_addressCountryCode", "organisation/_addressGeoLocation"]
+      },
+      "_addressCity": {
+        "hidden": true,
+        "generator": ["one-of-resource-lines", "seeds/city-names.txt"]
+      },
+      "_addressPostalCode": {
+        "hidden": true,
+        "generator": ["format", "%d%c%c"],
+        "deps": ["organisation/_fourInt", "organisation/_oneCap3", "organisation/_oneCap4"]
+      },
+      "_linkDomainBase": {
+        "hidden": true,
+        "generator": ["sanitize"],
+        "deps": ["organisation/_name"]
+      },
+      "_addressStreetNumberInt": {
+        "hidden": true,
+        "generator": ["int", 1, 200]
+      },
+      "_addressStreetNumber": {
+        "hidden": true,
+        "generator": ["format", "%d"],
+        "deps": ["organisation/_addressStreetNumberInt"]
+      },
+      "_addressGeoLocationLon": {
+        "hidden": true,
+        "generator": ["int", 0, 180]
+      },
+      "_addressCountryCode": {
+        "hidden": true,
+        "value": "NL"
+      },
+      "_addressGeoLocation": {
+        "hidden": true,
+        "generator": ["object", "latitude", "longitude"],
+        "deps": ["organisation/_addressGeoLocationLat", "organisation/_addressGeoLocationLon"]
+      },
+      "_nameType": {
+        "hidden": true,
+        "generator": ["one-of", ["Universiteit", "Hogeschool", "Academie"]]
+      },
+      "_addressGeoLocationLat": {
+        "hidden": true,
+        "generator": ["int", 0, 85]
+      },
+      "_linkDomain": {
+        "hidden": true,
+        "generator": ["format", "%s.nl"],
+        "deps": ["organisation/_linkDomainBase"]
+      },
+      "_fourInt": {
+        "hidden": true,
+        "generator": ["int", 1000, 9999]
+      },
+      "_oneCap2": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_addressType": {
+        "hidden": true,
+        "generator": ["one-of", ["teaching"]]
+      },
+      "_oneCap3": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_oneChar": {
+        "hidden": true,
+        "generator": ["char", "a", "z"]
+      },
+      "_addressStreet": {
+        "hidden": true,
+        "generator": ["one-of-resource-lines", "seeds/street-names.txt"]
+      },
+      "_addressAdditional": {
+        "hidden": true,
+        "generator": ["language-typed-string", "boven"]
+      },
+      "_oneCap4": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_otherCode": {
+        "hidden": true,
+        "generator": ["object", "codeType", "code", "institution_code"],
+        "deps": ["organisation/_code"]
+      },
+      "_code": {
+        "hidden": true,
+        "generator": ["format", "%c%c%c%c"],
+        "deps": ["organisation/_oneInt", "organisation/_oneInt", "organisation/_oneCap1", "organisation/_oneCap2"]
+      }
+    }
+  },
+  {
+    "name": "academicSession",
+    "refs": {
+      "parent": {
+        "hidden": false,
+        "graph": "tree",
+        "deps": ["academicSession/academicSessionId"],
+        "nilable": 0.2
+      }
+    } ,
+    "attributes": {
+      "academicSessionId": {
+        "generator": ["uuid"]
+      },
+      "academicSessionType": {
+        "generator": ["one-of", ["academic_year","semester","trimester","quarter","testing_period","period"]]
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["academicSession/academicSessionId"]
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["academicSession/_name"]
+      },
+      "_name": {
+        "generator": ["format", "%s %s"],
+        "deps": ["academicSession/_nameType", "academicSession/_nameNumber"],
+        "hidden": true
+      },
+      "startDateTime": {
+        "generator": ["first-weekday-of", "monday"],
+        "deps": ["academicSession/_termStartYear", "academicSession/_termStartMonth"]
+      },
+      "endDateTime": {
+        "generator": "last-day-of",
+        "deps": ["academicSession/_termEndYear", "academicSession/_termEndMonth"]
+      },
+      "_termStartYearAfter": {
+        "hidden": true,
+        "generator": ["inc"],
+        "deps": ["academicSession/_termStartYear"]
+      },
+      "_nameNumber": {
+        "hidden": true,
+        "generator": ["int", 1, 2]
+      },
+      "_termStartYear": {
+        "hidden": true,
+        "generator": ["int"],
+        "deps": ["academicSession/_termMinYear", "academicSession/_termMaxStartYear"]
+      },
+      "_termEndYear": {
+        "hidden": true,
+        "generator": ["int"],
+        "deps": ["academicSession/_termStartYearAfter", "academicSession/_termMaxEndYear"]
+      },
+      "_nameType": {
+        "hidden": true,
+        "generator": ["one-of", ["blok", "periode", "semester"]]
+      },
+      "_termMaxEndYear": {
+        "hidden": true,
+        "value": 2030
+      },
+      "_termStartMonth": {
+        "hidden": true,
+        "generator": ["one-of", ["february", "september"]]
+      },
+      "_termMinYear": {
+        "hidden": true,
+        "value": 1990
+      },
+      "_termMaxStartYear": {
+        "hidden": true,
+        "value": 2019
+      },
+      "_termEndMonth": {
+        "hidden": true,
+        "generator": ["one-of", ["january", "august"]]
+      }
+    }
+  },
+  {
+    "name": "programme",
+    "refs": {
+      "organisation": {
+        "hidden": false,
+        "deps": ["organisation/organisationId"]
+      },
+      "_coordinator": {
+        "hidden": true,
+        "deps": ["person/personId"]
+      },
+      "parent": {
+        "hidden": false,
+        "deps": ["programme/programmeId"],
+        "graph": "tree",
+        "nilable": 0.8
+      }
+    },
+    "attributes": {
+      "programmeId": {
+        "generator": ["uuid"]
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code", "programme_code"],
+        "deps": ["programme/_crohoCreboCode"]
+      },
+      "programmeType": {
+        "generator": ["weighted", {
+          "programme": 20,
+          "specification": 15,
+          "minor": 10,
+          "honours": 1,
+          "specialisation": 1,
+          "track": 1
+        }]
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["programme/_name"]
+      },
+      "_name": {
+        "generator": ["one-of-keyed-resource", "seeds/programme-names.yml"],
+        "deps": ["programme/_crohoCreboCodeCategory"],
+        "hidden": true
+      },
+      "abbreviation": {
+        "generator": "abbreviate",
+        "deps": ["programme/_name"],
+        "constraints": ["unique"]
+      },
+      "description": {
+        "generator": ["language-typed-string"],
+        "deps": ["programme/_description"]
+      },
+      "_description": {
+        "generator": "lorem-surf",
+        "hidden": true
+      },
+      "teachingLanguages":{
+        "generator": ["arrayize"],
+        "deps": ["programme/_teachingLanguage"]
+      },
+      "_teachingLanguage": {
+        "hidden": true,
+        "generator": ["one-of", ["nld", "eng"]]
+      },
+      "studyLoad": {
+        "generator": ["object", "studyLoadUnit", "value"],
+        "deps": ["programme/_studyLoadUnit", "programme/_studyLoadValue"]
+      },
+      "qualificationAwarded": {
+        "generator": ["one-of", ["diploma", "vocational_diploma", "certificate", "associate_degree", "bachelor", "master", "doctoral", "none"]]
+      },
+      "modeOfStudy": {
+        "generator": ["one-of", ["full_time", "part_time", "dual_training", "self_paced"]]
+      },
+      "modesOfDelivery": {
+        "generator": ["at-least-one-of", ["blended","coil","hybrid","joint_delivery","online","presential","project_based","research_lab_based","work_based"]]
+      },
+      "duration": {
+        "value": "P1DT30H4S"
+      },
+      "_firstStartDate": {
+        "generator": ["date", "2020-01-01", "2025-01-01"],
+        "hidden": true
+      },
+      "firstStartDateTime": {
+        "generator": ["format", "%tF"],
+        "deps": ["programme/_firstStartDate"]
+      },
+      "levelOfQualification": {
+        "generator": ["one-of", ["eqf_0","eqf_1", "eqf_2", "eqf_3", "eqf_4", "nlqf_4plus", "eqf_5", "eqf_6", "eqf_7", "eqf_8"]]
+      },
+      "level": {
+        "generator": ["one-of", ["pre_vocational","secondary_vocational_education","secondary_vocational_education_1","secondary_vocational_education_2","secondary_vocational_education_3", "secondary_vocational_education_4", "associate_degree", "bachelor", "master", "doctoral", "post_doctoral","undefined","undivided","nt2-1","nt2-2"]]
+      },
+      "fieldsOfStudy": {
+        "generator": ["one-of", ["0011", "0021", "0031", "0111", "0112", "0113", "0114", "0211", "0212", "0213", "0214", "0215", "0221", "0222", "0223", "0231", "0232", "0311", "0312", "0313", "0314", "0321", "0322", "0411", "0412", "0413", "0414", "0415", "0416", "0417", "0421", "0511", "0512", "0521", "0522", "0531", "0532", "0533", "0541", "0542", "0611", "0612", "0613", "0711", "0712", "0713", "0714", "0715", "0716", "0721", "0722", "0723", "0724", "0731", "0732", "0811", "0812", "0821", "0831", "0841", "0911", "0912", "0913", "0914", "0915", "0916", "0917", "0921", "0922", "0923", "1011", "1012", "1013", "1014", "1015", "1021", "1022", "1031", "1032", "1041"]]
+      },
+      "enrolment": {
+        "generator": ["language-typed-string"],
+        "deps": ["programme/_enrolment"]
+      },
+      "_enrolment": {
+        "generator": ["lorem-surf", "enrolment"],
+        "hidden": true
+      },
+      "_resources1": {
+        "generator": ["lorem-surf", "resources"],
+        "hidden": true
+      },
+      "_resources2": {
+        "generator": ["lorem-surf", "resources"],
+        "hidden": true
+      },
+      "_resources3": {
+        "generator": ["lorem-surf", "resources"],
+        "hidden": true
+      },
+      "resources": {
+        "generator": ["array"],
+        "deps": ["programme/_resources1", "programme/_resources2", "programme/_resources3"]
+      },
+      "_learningOutcomes": {
+        "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]],
+        "hidden": true
+      },
+      "assessment": {
+        "generator": ["language-typed-string"],
+        "deps": ["programme/_assessment"]
+      },
+      "_assessment": {
+        "generator": ["lorem-surf", "assessment"],
+        "hidden": true
+      },
+      "_admissionRequirements": {
+        "generator": ["lorem-surf", "requirements"],
+        "hidden": true
+      },
+      "admissionRequirements": {
+        "generator": ["language-typed-string"],
+        "deps": ["programme/_admissionRequirements"]
+      },
+      "_qualificationRequirements": {
+        "generator": ["lorem-surf", "requirements"],
+        "hidden": true
+      },
+      "qualificationRequirements": {
+        "generator": ["language-typed-string"],
+        "deps": ["programme/_qualificationRequirements"]
+      },
+      "link": {
+        "generator": ["format", "https://%s/programmes/%s"],
+        "deps": [
+          ["programme/organisation", "organisation/_linkDomain"], "programme/programmeId"
+        ]
+      },
+      "otherCodes": {
+        "generator": ["arrayize"],
+        "deps": ["programme/primaryCode"]
+      },
+      "addresses": {
+        "generator": ["arrayize"],
+        "deps": [["programme/organisation","organisation/_address"]]
+      },
+      "coordinators": {
+        "generator": ["arrayize"],
+        "deps": ["programme/_coordinator"]
+      },
+      "_validFrom": {
+        "generator": ["date", "1990-01-01", "2020-12-31"],
+        "hidden": true
+      },
+      "_validTo": {
+        "generator": ["later-date", 1000, 4000],
+        "hidden": true,
+        "deps": ["programme/_validFrom"]
+      },
+      "validFrom": {
+        "generator": ["format", "%tF"],
+        "deps": ["programme/_validFrom"]
+      },
+      "validTo": {
+        "generator": ["format", "%tF"],
+        "deps": ["programme/_validTo"]
+      },
+      "_crohoCreboCode": {
+        "hidden": true,
+        "generator": ["one-of-keyed-resource", "seeds/crohocode.yml"],
+        "deps": ["programme/_name"]
+      },
+      "_crohoCreboCodeCategory": {
+        "hidden": true,
+        "generator": ["one-of", ["Economie", "Gezondheidszorg", "Gedrag & Maatschappij", "Landbouw & Natuurlijke omgeving", "Natuur", "Onderwijs", "Taal & Cultuur", "Recht", "Techniek", "Sectoroverstijgend"]]
+      },
+      "_studyLoadUnit": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "contacttime": 1,
+          "ects": 10,
+          "sbu": 1,
+          "sp":1,
+          "hour": 1
+        }]
+      },
+      "_studyLoadValue": {
+        "hidden": true,
+        "generator": ["int-cubic", 30, 180]
+      }
+    }
+  }
+  ,
+  {
+    "name": "course",
+    "refs": {
+      "organisation": {
+        "hidden": false,
+        "deps": ["organisation/organisationId"]
+      },
+      "_programme": {
+        "hidden": true,
+        "deps": ["programme/programmeId"]
+      },
+      "_coordinator": {
+        "hidden": true,
+        "deps": ["person/personId"]
+      }
+    },
+    "attributes": {
+      "courseId": {
+        "generator": ["uuid"]
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["course/courseId"]
+      },
+      "_name": {
+        "generator": ["format"],
+        "deps": ["course/_nameFormat", "course/_nameProgramme"],
+        "hidden": true
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["course/_name"]
+      },
+      "abbreviation": {
+        "generator": ["abbreviate"],
+        "deps": ["course/_name"],
+        "constraints": ["unique"]
+      },
+      "_description": {
+        "generator": ["lorem-surf"],
+        "hidden": true
+      },
+      "description": {
+        "generator": ["language-typed-string"],
+        "deps": ["course/_description"]
+      },
+      "teachingLanguages":{
+        "generator": ["arrayize"],
+        "deps": ["course/_teachingLanguage"]
+      },
+      "_teachingLanguage": {
+        "generator": ["one-of", ["nld", "eng"]],
+        "hidden": true
+      },
+      "studyLoad": {
+        "generator": ["object", "studyLoadUnit", "value"],
+        "deps": [["course/_programme", "programme/_studyLoadUnit"], ["course/_programme", "programme/_studyLoadValue"]]
+      },
+      "modesOfDelivery": {
+        "generator": ["at-least-one-of", ["blended","coil","hybrid","joint_delivery","online","presential","project_based","research_lab_based","work_based"]]
+      },
+      "duration": {
+        "value": "P1DT30H4S"
+      },
+      "_firstStartDate": {
+        "generator": ["date", "2020-01-01", "2025-01-01"],
+        "hidden": true
+      },
+      "firstStartDate": {
+        "generator": ["format", "%tF"],
+        "deps": ["course/_firstStartDate"]
+      },
+      "fieldsOfStudy": {
+        "generator": ["one-of", ["0011", "0021", "0031", "0111", "0112", "0113", "0114", "0211", "0212", "0213", "0214", "0215", "0221", "0222", "0223", "0231", "0232", "0311", "0312", "0313", "0314", "0321", "0322", "0411", "0412", "0413", "0414", "0415", "0416", "0417", "0421", "0511", "0512", "0521", "0522", "0531", "0532", "0533", "0541", "0542", "0611", "0612", "0613", "0711", "0712", "0713", "0714", "0715", "0716", "0721", "0722", "0723", "0724", "0731", "0732", "0811", "0812", "0821", "0831", "0841", "0911", "0912", "0913", "0914", "0915", "0916", "0917", "0921", "0922", "0923", "1011", "1012", "1013", "1014", "1015", "1021", "1022", "1031", "1032", "1041"]]
+      },
+      "_learningOutcomes": {
+        "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]],
+        "hidden": true
+      },
+      "learningOutcomes": {
+        "generator": ["language-typed-strings"],
+        "deps": ["course/_learningOutcomes"]
+      },
+      "_admissionRequirements": {
+        "generator": ["lorem-surf", "requirements"],
+        "hidden": true
+      },
+      "admissionRequirements": {
+        "generator": ["language-typed-string"],
+        "deps": ["course/_admissionRequirements"]
+      },
+      "_qualificationRequirements": {
+        "generator": ["lorem-surf", "requirements"],
+        "hidden": true
+      },
+      "qualificationRequirements": {
+        "generator": ["language-typed-string"],
+        "deps": ["course/_qualificationRequirements"]
+      },
+      "level": {
+        "generator": ["one-of", ["pre_vocational","secondary_vocational_education","secondary_vocational_education_1","secondary_vocational_education_2","secondary_vocational_education_3", "secondary_vocational_education_4", "associate_degree", "bachelor", "master", "doctoral", "post_doctoral","undefined","undivided","nt2-1","nt2-2"]]
+      },
+      "_enrolment": {
+        "generator": ["lorem-surf", "enrolment"],
+        "hidden": true
+      },
+      "enrolment": {
+        "generator": ["language-typed-string"],
+        "deps": ["course/_enrolment"]
+      },
+      "_resources": {
+        "generator": ["lorem-surf", "resources"],
+        "hidden": true
+      },
+      "resources": {
+        "generator": ["arrayize"],
+        "deps": ["course/_resources"]
+      },
+      "_assessment": {
+        "generator": ["lorem-surf", "assessment"],
+        "hidden": true
+      },
+      "assessment": {
+        "generator": ["language-typed-string"],
+        "deps": ["course/_assessment"]
+      },
+      "link": {
+        "generator": ["format", "https://%s/courses/%s"],
+        "deps": [
+          ["course/organisation", "organisation/_linkDomain"], "course/courseId"
+        ]
+      },
+      "otherCodes": {
+        "generator": ["arrayize"],
+        "deps": ["course/primaryCode"]
+      },
+      "addresses": {
+        "generator": ["arrayize"],
+        "deps": [["course/organisation", "organisation/_address"]]
+      },
+      "coordinators": {
+        "generator": ["arrayize"],
+        "deps": ["course/_coordinator"] 
+      },
+      "_nameFormat": {
+        "hidden": true,
+        "generator": ["one-of", ["Inleiding tot %s", "Geschiedenis van de %s", "Filosofie van %s", "Psychologie van de %s", "Wiskunde van de %s", "Macro %s", "Micro %s", "%s in de praktijk", "%s in de vorige eeuw", "%s van de toekomst", "%s voor gevorderden"]]
+      },
+      "_nameProgramme": {
+        "hidden": true,
+        "generator": ["one-of-keyed-resource", "seeds/programme-names.yml"],
+        "deps": [
+          ["course/_programme", "programme/_crohoCreboCodeCategory"]
+        ]
+      },
+      "programmes": {
+        "generator": ["arrayize"],
+        "deps": ["course/_programme"]
+      },
+      "_validFrom": {
+        "generator": ["date", "1990-01-01", "2020-12-31"],
+        "hidden": true
+      },
+      "_validTo": {
+        "generator": ["later-date", 1000, 4000],
+        "hidden": true,
+        "deps": ["course/_validFrom"]
+      },
+      "validFrom": {
+        "generator": ["format", "%tF"],
+        "deps": ["course/_validFrom"]
+      },
+      "validTo": {
+        "generator": ["format", "%tF"],
+        "deps": ["course/_validTo"]
+      }
+    }
+  },
+  {
+    "name": "person",
+    "refs": {
+      "organisation": {
+        "hidden": false,
+        "deps": ["organisation/organisationId"]
+      }
+    },
+    "attributes": {
+      "personId": {
+        "generator": ["uuid"],
+        "constraints": ["unique"]
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["person/email"]
+      },
+      "givenName": {
+        "generator": ["one-of-resource-lines", "seeds/first-names.txt"]
+      },
+      "surnamePrefix": {
+        "optional": true,
+        "generator": ["weighted", {
+          "": 50,
+          "van de": 3,
+          "bij": 1,
+          "op de": 1,
+          "van 't": 2,
+          "van het": 3,
+          "bij het": 1,
+          "aan het": 1,
+          "aan de": 1,
+          "op het": 1,
+          "op 't": 1,
+          "bij de": 1,
+          "van": 3,
+          "in de": 2,
+          "in 't": 2
+        }]
+      },
+      "surname": {
+        "generator": ["one-of-resource-lines", "seeds/last-names.txt"]
+      },
+      "displayName": {
+        "generator": ["join"],
+        "deps": ["person/givenName", "person/surnamePrefix", "person/surname"]
+      },
+      "activeEnrollment": {
+        "generator": ["one-of", [true, false]]
+      },
+      "_dateOfBirth": {
+        "generator": ["date", "1990-01-01", "2005-01-01"],
+        "hidden": true
+      },
+      "dateOfBirth": {
+        "generator": ["format", "%tF"],
+        "deps": ["person/_dateOfBirth"]
+      },
+      "cityOfBirth": {
+        "generator": ["one-of-resource-lines", "seeds/city-names.txt"]
+      },
+      "affiliations": {
+        "value": ["employee"]
+      },
+      "email": {
+        "generator": ["format", "%s@%s"],
+        "deps": ["person/_mailName", ["person/organisation", "organisation/_linkDomain"]]
+      },
+      "telephoneNumber": {
+        "generator": ["format", "0%09d"],
+        "deps": ["person/_telephoneNumber"]
+      },
+      "mobileNumber": {
+        "generator": ["format", "06%08d"],
+        "deps": ["person/_mobileNumber"]
+      },
+      "photoOfficial": {
+        "value": "https://docs.atlassian.com/aui/8.4.1/docs/images/avatar-person.svg"
+      },
+      "photoSocial": {
+        "value": "https://docs.atlassian.com/aui/8.4.1/docs/images/avatar-person.svg"
+      },
+      "gender": {
+        "generator": ["weighted", {
+          "m": 46,
+          "f": 48,
+          "x": 2,
+          "u": 2,
+          "o": 2
+        }]
+      },
+      "titlePrefix": {
+        "optional": true,
+        "generator": ["weighted", {
+          "": 50,
+          "MSc..": 2,
+          "BSc.": 2,
+          "prof.": 4,
+          "dr.": 4,
+          "drs.": 4,
+          "ir.": 4,
+          "mr": 4,
+          "ing.": 5
+        }]
+      },
+      "titleSuffix": {
+        "optional": true,
+        "generator": ["weighted", {
+          "": 50,
+          "phd": 1
+        }]
+      },
+      "office": {
+        "generator": ["format", "%c%c%c %c.%c%c"],
+        "deps": ["person/_office1", "person/_office2", "person/_office3", "person/_office4", "person/_office5", "person/_office6"]
+      },
+      "otherCodes": {
+        "generator": ["arrayize"],
+        "deps": ["person/primaryCode"]
+      },
+      "_mobileNumber": {
+        "hidden": true,
+        "generator": ["int", 0, 99999999],
+        "constraints": ["unique"]
+      },
+      "_mailName": {
+        "hidden": true,
+        "generator": ["sanitize"],
+        "deps": ["person/displayName"],
+        "constraints": ["unique"]
+      },
+      "_telephoneNumber": {
+        "hidden": true,
+        "generator": ["int", 100000000, 999999999],
+        "constraints": ["unique"]
+      },
+      "_office1": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_office6": {
+        "hidden": true,
+        "generator": ["char", "0", "9"]
+      },
+      "_office3": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_office5": {
+        "hidden": true,
+        "generator": ["char", "0", "9"]
+      },
+      "_office2": {
+        "hidden": true,
+        "generator": ["char", "A", "Z"]
+      },
+      "_office4": {
+        "hidden": true,
+        "generator": ["char", "0", "9"]
+      }
+    }
+  },
+  {
+    "name": "programmeOffering",
+    "refs": {
+      "programme": {
+        "deps": ["programme/programmeId"],
+        "hidden": false
+      },
+      "organisation": {
+        "hidden": false,
+        "deps": ["organisation/organisationId"]
+      },
+      "academicSession": {
+        "hidden": false,
+        "deps": ["academicSession/academicSessionId"]
+      }
+    },
+    "attributes": {
+      "programmeOfferingId": {
+        "generator": ["uuid"]
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["programmeOffering/_code"]
+      },
+      "_name": {
+        "generator": ["format", "%s - %s"],
+        "deps": [
+          ["programmeOffering/programme", "programme/_name"],
+          ["programmeOffering/academicSession", "academicSession/_name"]
+        ],
+        "hidden": true
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["programmeOffering/_name"]
+      },
+      "abbreviation": {
+        "deps": [
+          ["programmeOffering/programme", "programme/abbreviation"]
+        ]
+      },
+      "description": {
+        "deps": [
+          ["programmeOffering/programme", "programme/description"]
+        ]
+      },
+      "teachingLanguages":{
+        "generator": ["arrayize"],
+        "deps": ["programme/_teachingLanguage"]
+      },
+      "_teachingLanguage": {
+        "generator": ["one-of", ["nld", "eng"]],
+        "hidden": true
+      },
+      "modesOfDelivery": {
+        "generator": ["at-least-one-of", ["blended","coil","hybrid","joint_delivery","online","presential","project_based","research_lab_based","work_based"]]
+      },
+      "maxNumberStudents": {
+        "generator": ["int-cubic", 5, 180]
+      },
+      "enrolledNumberStudents": {
+        "deps": ["programmeOffering/maxNumberStudents"],
+        "generator": ["int", 0]
+      },
+      "pendingNumberStudents": {
+        "generator": ["int", 0, 10]
+      },
+      "minNumberStudents": {
+        "generator": ["int", 1, 5]
+      },
+      "resultExpected": {
+        "generator": ["boolean"]
+      },
+      "resultValueType": {
+        "generator": ["one-of", ["pass_or_fail", "insufficient_satisfactory_good", "us_letter", "uk_letter", "grade_0_100", "grade_0_10", "grade_0_10_one_decimal", "reference_level_europass", "other"]]
+      },
+      "link": {
+        "generator": ["format", "https://%s/programs/%s"],
+        "deps": [
+          ["programmeOffering/organisation", "organisation/_linkDomain"], "programmeOffering/programmeOfferingId"
+        ]
+      },
+      "otherCodes": {
+        "generator": ["arrayize"],
+        "deps": ["programmeOffering/_otherCode"]
+      },
+      "startDateTime": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["programmeOffering/academicSession", "academicSession/startDateTime"]
+        ]
+      },
+      "endDateTime": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["programmeOffering/academicSession", "academicSession/endDateTime"]
+        ]
+      },
+      "_enrolStartDate": {
+        "value": "2023-01-01",
+        "hidden": true
+      },
+      "_enrolEndDate": {
+        "value": "2023-12-31",
+        "hidden": true
+      },
+      "flexibleEntryPeriodStartDateTime": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["programmeOffering/academicSession", "academicSession/startDateTime"]
+        ]
+      },
+      "flexibleEntryPeriodEndDateTime": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["programmeOffering/academicSession", "academicSession/endDateTime"]
+        ]
+      },
+      "addresses": {
+        "generator": ["arrayize"],
+        "deps": [["programmeOffering/organisation","organisation/_address"]]
+      },
+      "_otherCode": {
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["programmeOffering/_code"],
+        "hidden": true
+      },
+      "_code": {
+        "hidden": true,
+        "generator": ["format", "%s"],
+        "deps": [["programmeOffering/programme","programme/_crohoCreboCode"]]
+      }
+    }
+  },
+  {
+    "name": "courseOffering",
+    "refs": {
+      "course": {
+        "deps": ["course/courseId"],
+        "hidden": false
+      },
+      "organisation": {
+        "hidden": false,
+        "deps": ["organisation/organisationId"]
+      },
+      "academicSession": {
+        "hidden": false,
+        "deps": ["academicSession/academicSessionId"]
+      },
+      "programmeOffering": {
+        "hidden": false,
+        "deps": ["programmeOffering/programmeOfferingId"]
+      }
+    },
+    "attributes": {
+      "courseOfferingId": {
+        "generator": ["uuid"]
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["courseOffering/courseOfferingId"]
+      },
+      "_name": {
+        "generator": ["format", "%s - %s"],
+        "deps": [
+          ["courseOffering/course", "course/_name"],
+          ["courseOffering/academicSession", "academicSession/_name"]
+        ],
+        "hidden": true
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["courseOffering/_name"]
+      },
+      "abbreviation": {
+        "deps": [
+          ["courseOffering/course", "course/abbreviation"]
+        ]
+      },
+      "description": {
+        "deps": [
+          ["courseOffering/course", "course/description"]
+        ]
+      },
+      "teachingLanguages":{
+        "generator": ["arrayize"],
+        "deps": ["courseOffering/_teachingLanguage"]
+      },
+      "_teachingLanguage": {
+        "hidden": true,
+        "generator": ["one-of", ["nld", "eng"]]
+      },
+      "modesOfDelivery": {
+        "generator": ["at-least-one-of", ["blended","coil","hybrid","joint_delivery","online","presential","project_based","research_lab_based","work_based"]]
+      },
+      "maxNumberStudents": {
+        "generator": ["int-cubic", 5, 180]
+      },
+      "enrolledNumberStudents": {
+        "deps": ["courseOffering/maxNumberStudents"],
+        "generator": ["int", 0]
+      },
+      "pendingNumberStudents": {
+        "generator": ["int", 0, 10]
+      },
+      "minNumberStudents": {
+        "generator": ["int", 1, 5]
+      },
+      "resultExpected": {
+        "generator": ["boolean"]
+      },
+      "resultValueType": {
+        "generator": ["one-of", ["pass_or_fail", "insufficient_satisfactory_good", "us_letter", "uk_letter", "grade_0_100", "grade_0_10", "grade_0_10_one_decimal", "reference_level_europass", "other"]]
+      },
+      "link": {
+        "generator": ["format", "https://%s/offerings/%s"],
+        "deps": [
+          ["courseOffering/organisation", "organisation/_linkDomain"], "courseOffering/courseOfferingId"
+        ]
+      },
+      "otherCodes": {
+        "generator": ["arrayize"],
+        "deps": ["courseOffering/primaryCode"]
+      },
+      "startDateTime": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/startDateTime"]
+        ]
+      },
+      "endDateTime": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/endDateTime"]
+        ]
+      },
+      "_enrolStartDateTime": {
+        "hidden": true,
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/startDateTime"]
+        ]
+      },
+      "_enrolEndDateTime": {
+        "hidden": true,
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/endDateTime"]
+        ]
+      },
+      "flexibleEntryPeriodStartDateTime": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/startDateTime"]
+        ]
+      },
+      "flexibleEntryPeriodEndDateTime": {
+        "generator": ["format", "%tF"],
+        "deps": [
+          ["courseOffering/academicSession", "academicSession/endDateTime"]
+        ]
+      },
+      "addresses": {
+        "generator": ["arrayize"],
+        "deps": [["courseOffering/organisation", "organisation/_address"]]
+      }
+    }
+  }
+]
+}
