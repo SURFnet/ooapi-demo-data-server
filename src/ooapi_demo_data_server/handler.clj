@@ -184,12 +184,11 @@
       (get data/data datatype))))
 
 (jsong/add-encoder java.util.GregorianCalendar
-                   (if (= data/ooapi-version "v6") 
+                   (if (= data/ooapi-version "v6")
                      (fn [c jsonGenerator]
-                       (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssXXX") (.getTime c)))) 
+                       (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssXXX") (.getTime c))))
                      (fn [c jsonGenerator]
-                       (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") (.getTime c)))))
-                   )
+                       (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") (.getTime c))))))
 
 (defn single-ref?
   [x]
@@ -240,7 +239,7 @@
       (inc q))))
 
 (defn clean-attr
-  [item attr] 
+  [item attr]
   (case data/ooapi-version
     "v4"
     (dissoc item attr)
@@ -253,18 +252,57 @@
         (assoc item attr new-value))
       item)))
 
+(def attr-expand-rename-mapping
+  {"coordinatorIds" "coordinators"
+   "parentId" "parent"
+   "childIds" "children"
+   "yearId" "year"
+   "programmeIds" "programmes"
+   "learningOutcomeIds" "learningOutcomes"
+   "instructorIds" "instructors"
+   "organisationId" "organisation"})
+
+(def attr-v6-expand-mapping
+  (clojure.set/map-invert attr-expand-rename-mapping))
+
+(defn attr-expand-mapping-lookup
+  [x]
+  (keyword (namespace x) (or (get attr-v6-expand-mapping (name x)) (name x)))
+  )
+
+(defn rename-expanded-attr
+  [item attr]
+  (case data/ooapi-version
+    (or "v4" "v5")
+    item
+
+    "v6"
+    (let [attr-name (name attr)
+          attr-ns (namespace attr)
+          new-name (or (get attr-expand-rename-mapping attr-name) attr-name)
+          value (get item attr)
+          new-item (if (= new-name attr-name)
+                     item
+                     (dissoc (assoc item (keyword attr-ns new-name) value) attr))]
+      new-item)))
+
+
 (defn clean-item-attrs
   [item attrs]
   (reduce (fn [i attr] (clean-attr i attr)) item attrs))
 
 (defn clean-item
   [item]
-  (reduce (fn [i attr] 
+  (reduce (fn [i attr]
             (if (ref? (get item attr))
               (clean-attr i attr)
               i))
           item
           (keys item)))
+
+(defn rename-expanded-item-attrs
+  [item attrs]
+  (reduce (fn [i attr] (rename-expanded-attr i attr)) item attrs))
 
 (defn expand-attr
   "Expands an attribute by resolving the ref.
@@ -302,11 +340,12 @@
                                                 (combine-kw datatype kw))))
                              (set)
                              (intersection expandable-attrs))
-        attrs-to-clean (difference expandable-attrs attrs-to-expand)] 
+        attrs-to-clean (difference expandable-attrs attrs-to-expand)
+        attrs-to-expand-v6 (if (= data/ooapi-version "v6") (map attr-expand-mapping-lookup attrs-to-expand) attrs-to-expand)]
     (-> item
-        (#(expand-item-attrs % attrs-to-expand))
-        (#(clean-item-attrs % attrs-to-clean)))))
-
+        (#(expand-item-attrs % attrs-to-expand-v6))
+        (#(clean-item-attrs % attrs-to-clean))
+        (#(rename-expanded-item-attrs % attrs-to-expand-v6)))))
 
 (defn many-handler
   [{:keys [ooapi-version] :as req}]
@@ -441,22 +480,26 @@
       (create-chaos-handler normal-handler modes)
       normal-handler)))
 
-;;  (defn try-app
-;;     ([uri query-string]
-;;      (let [app (ring/ring-handler (router))
-;;            request {:request-method :get
-;;                     :uri uri
-;;                     :query-string query-string}
-;;            response-str (:body (app request))]
-;;        (json/parse-string response-str)))
-;;     ([uri]
-;;      (try-app uri nil)))
+;; (defn try-app
+;;   ([uri query-string]
+;;    (let [app (ring/ring-handler (router))
+;;          request {:request-method :get
+;;                   :uri uri
+;;                   :query-string query-string}
+;;          response-str (:body (app request))]
+;;      nil))
+;;   ([uri]
+;;    (try-app uri nil)))
 
-;;   (try-app "/organisations")
+;; (try-app "/organisations")
 
-;;   (try-app "/courses" "pageSize=20")
+;; (try-app "/courses" "pageSize=10")
 
-;;   (try-app "/courses/fa00a62b-525b-19df-8a3c-47434a535c55" "expand=coordinators")
+;; (try-app "/courses/81a4574e-c727-3beb-4703-45947372bda0" "expand=coordinators")
+
+;; (def testmap {:a "a" :b "b" :c {:d "d" :e "e"}})
+
+;; (select-keys testmap [:c/:d])
 
 ;;   (try-app "/education-specifications")
 
