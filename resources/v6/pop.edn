@@ -6,4 +6,5 @@
  :programOfferingAssociation 50
  :course 40 
  :courseOffering 120
- :person 200}
+ :person 200
+ :learningOutcome 100}

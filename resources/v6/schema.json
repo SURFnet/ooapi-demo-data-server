@@ -174,7 +174,7 @@
   {
     "name": "academicSession",
     "refs": {
-      "parent": {
+      "parentId": {
         "hidden": false,
         "graph": "tree",
         "deps": ["academicSession/academicSessionId"],
@@ -257,7 +257,7 @@
   {
     "name": "programme",
     "refs": {
-      "organisation": {
+      "organisationId": {
         "hidden": false,
         "deps": ["organisation/organisationId"]
       },
@@ -265,11 +265,15 @@
         "hidden": true,
         "deps": ["person/personId"]
       },
-      "parent": {
+      "parentId": {
         "hidden": false,
         "deps": ["programme/programmeId"],
         "graph": "tree",
         "nilable": 0.8
+      },
+      "_learningOutcome": {
+        "hidden": true,
+        "deps": ["learningOutcome/learningOutcomeId"]
       }
     },
     "attributes": {
@@ -377,9 +381,9 @@
         "generator": ["array"],
         "deps": ["programme/_resources1", "programme/_resources2", "programme/_resources3"]
       },
-      "_learningOutcomes": {
-        "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]],
-        "hidden": true
+      "learningOutcomeIds": {
+        "generator": ["arrayize"],
+        "deps": ["programme/_learningOutcome"]
       },
       "assessment": {
         "generator": ["language-typed-string"],
@@ -408,7 +412,7 @@
       "link": {
         "generator": ["format", "https://%s/programmes/%s"],
         "deps": [
-          ["programme/organisation", "organisation/_linkDomain"], "programme/programmeId"
+          ["programme/organisationId", "organisation/_linkDomain"], "programme/programmeId"
         ]
       },
       "otherCodes": {
@@ -417,9 +421,9 @@
       },
       "addresses": {
         "generator": ["arrayize"],
-        "deps": [["programme/organisation","organisation/_address"]]
+        "deps": [["programme/organisationId","organisation/_address"]]
       },
-      "coordinators": {
+      "coordinatorIds": {
         "generator": ["arrayize"],
         "deps": ["programme/_coordinator"]
       },
@@ -462,6 +466,76 @@
       "_studyLoadValue": {
         "hidden": true,
         "generator": ["int-cubic", 30, 180]
+      },
+      "_rioSpecificationSubType": {
+        "hidden": true,
+        "value": "variant"
+      },
+      "_rioPrivateCategoryItem": {
+        "hidden": true,
+        "generator": ["one-of", ["business_and_project_support", "economy", "behavior_and_society", "healthcare_and_sport", "hobby_and_leisure_time", "agriculture_food_and_natural_environment", "management_and_project_management", "nature", "education", "law", "cross_sectoral", "language_and_culture", "technology_and_ict", "tourism_hospitality_and_recreation", "transport_and_logistics", "security_and_defense"]]
+      },
+      "_rioPrivateCategory": {
+        "hidden": true,
+        "generator": ["arrayize"],
+        "deps": ["programme/_rioPrivateCategoryItem"]
+      },
+      "_rioConsentParticipationSTAP": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "permission_granted": 1,
+          "permission_not_granted": 9
+        }]
+      },
+      "_rioJointPartnerCodes": {
+        "hidden": true,
+        "value": ["123A321"]
+      },
+      "_rioForeignPartners": {
+        "hidden": true,
+        "generator": ["at-least-one-of", ["Massachusetts Institute of Technology (MIT)", "University of Cambridge", "Stanford University", "University of Oxford", "Harvard University", "California Institute of Technology (Caltech)", "Imperial College London", "UCL (University College London)", "ETH Zurich (Swiss Federal Institute of Technology)", "University of Chicago", "National University of Singapore (NUS)", "Peking University"]]
+      },
+      "_rioDeficiency": {
+        "hidden": true,
+        "generator": ["one-of", ["deficiencies", "no_deficiencies"]]
+      },
+      "_rioRequirementsActivities": {
+        "hidden": true,
+        "generator": ["one-of", ["requirements", "no_requirements"]]
+      },
+      "_rioPropaedeuticPhase": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "no_propaedeutic_phase": 10,
+          "propaedeutic_phase_exam": 1,
+          "propaedeutic_phase_no_exam": 1
+        }]
+      },
+      "_rioStudyChoiceCheck": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "no_study_choice_check": 10,
+          "study_choice_check_available": 5,
+          "study_choice_check_mandatory": 1
+        }]
+      },
+      "_rioAcceleratedRoute": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "accelerated_route": 1,
+          "no_accelerated_route": 20
+        }]
+      },
+      "_rioConsumer": {
+        "hidden": true,
+        "generator": ["object-with-optionals", {"specificationSubType": 0.2, "jointPartnerCodes": 0.1, "foreignPartners": 0.1},
+                      "consumerKey", "educationOffererCode", "educationLocationCode", "consentParticipationSTAP", "jointPartnerCodes", "foreignPartners", "deficiency", "requirementsActivities", "propaedeuticPhase", "studyChoiceCheck", "acceleratedRoute", "specificationSubType", "privateCategory", 
+                      "rio", "122A112", "123X122"],
+        "deps": ["programme/_rioConsentParticipationSTAP", "programme/_rioJointPartnerCodes", "programme/_rioForeignPartners", "programme/_rioDeficiency", "programme/_rioRequirementsActivities", "programme/_rioPropaedeuticPhase", "programme/_rioStudyChoiceCheck", "programme/_rioAcceleratedRoute", "programme/_rioSpecificationSubType", "programme/_rioPrivateCategory"]
+      },
+      "consumers": {
+        "generator": ["arrayize"],
+        "deps": ["programme/_rioConsumer"]
       }
     }
   }
@@ -469,7 +543,7 @@
   {
     "name": "course",
     "refs": {
-      "organisation": {
+      "organisationId": {
         "hidden": false,
         "deps": ["organisation/organisationId"]
       },
@@ -480,6 +554,10 @@
       "_coordinator": {
         "hidden": true,
         "deps": ["person/personId"]
+      },
+      "_learningOutcome": {
+        "hidden": true,
+        "deps": ["learningOutcome/learningOutcomeId"]
       }
     },
     "attributes": {
@@ -541,14 +619,6 @@
       "fieldsOfStudy": {
         "generator": ["one-of", ["0011", "0021", "0031", "0111", "0112", "0113", "0114", "0211", "0212", "0213", "0214", "0215", "0221", "0222", "0223", "0231", "0232", "0311", "0312", "0313", "0314", "0321", "0322", "0411", "0412", "0413", "0414", "0415", "0416", "0417", "0421", "0511", "0512", "0521", "0522", "0531", "0532", "0533", "0541", "0542", "0611", "0612", "0613", "0711", "0712", "0713", "0714", "0715", "0716", "0721", "0722", "0723", "0724", "0731", "0732", "0811", "0812", "0821", "0831", "0841", "0911", "0912", "0913", "0914", "0915", "0916", "0917", "0921", "0922", "0923", "1011", "1012", "1013", "1014", "1015", "1021", "1022", "1031", "1032", "1041"]]
       },
-      "_learningOutcomes": {
-        "generator": ["at-least-one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]],
-        "hidden": true
-      },
-      "learningOutcomes": {
-        "generator": ["language-typed-strings"],
-        "deps": ["course/_learningOutcomes"]
-      },
       "_admissionRequirements": {
         "generator": ["lorem-surf", "requirements"],
         "hidden": true
@@ -595,7 +665,7 @@
       "link": {
         "generator": ["format", "https://%s/courses/%s"],
         "deps": [
-          ["course/organisation", "organisation/_linkDomain"], "course/courseId"
+          ["course/organisationId", "organisation/_linkDomain"], "course/courseId"
         ]
       },
       "otherCodes": {
@@ -604,11 +674,15 @@
       },
       "addresses": {
         "generator": ["arrayize"],
-        "deps": [["course/organisation", "organisation/_address"]]
+        "deps": [["course/organisationId", "organisation/_address"]]
       },
-      "coordinators": {
+      "coordinatorIds": {
         "generator": ["arrayize"],
         "deps": ["course/_coordinator"] 
+      },
+      "learningOutcomeIds": {
+        "generator": ["arrayize"],
+        "deps": ["course/_learningOutcome"] 
       },
       "_nameFormat": {
         "hidden": true,
@@ -621,7 +695,7 @@
           ["course/_programme", "programme/_crohoCreboCodeCategory"]
         ]
       },
-      "programmes": {
+      "programmeIds": {
         "generator": ["arrayize"],
         "deps": ["course/_programme"]
       },
@@ -641,6 +715,32 @@
       "validTo": {
         "generator": ["format", "%tF"],
         "deps": ["course/_validTo"]
+      },
+      "_rioConsentParticipationSTAP": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "permission_granted": 1,
+          "permission_not_granted": 9
+        }]
+      },
+      "_rioJointPartnerCodes": {
+        "hidden": true,
+        "value": ["123A321"]
+      },
+      "_rioForeignPartners": {
+        "hidden": true,
+        "generator": ["at-least-one-of", ["Massachusetts Institute of Technology (MIT)", "University of Cambridge", "Stanford University", "University of Oxford", "Harvard University", "California Institute of Technology (Caltech)", "Imperial College London", "UCL (University College London)", "ETH Zurich (Swiss Federal Institute of Technology)", "University of Chicago", "National University of Singapore (NUS)", "Peking University"]]
+      },
+      "_rioConsumer": {
+        "hidden": true,
+        "generator": ["object-with-optionals", {"jointPartnerCodes": 0.1, "foreignPartners": 0.1},
+                      "consumerKey", "educationOffererCode", "educationLocationCode", "consentParticipationSTAP", "jointPartnerCodes", "foreignPartners",
+                      "rio", "122A112", "123X122"],
+        "deps": ["course/_rioConsentParticipationSTAP", "course/_rioJointPartnerCodes", "course/_rioForeignPartners"]
+      },
+      "consumers": {
+        "generator": ["array"],
+        "deps": ["course/_rioConsumer"]
       }
     }
   },
@@ -809,15 +909,15 @@
   {
     "name": "programmeOffering",
     "refs": {
-      "programme": {
+      "programmeId": {
         "deps": ["programme/programmeId"],
         "hidden": false
       },
-      "organisation": {
+      "organisationId": {
         "hidden": false,
         "deps": ["organisation/organisationId"]
       },
-      "academicSession": {
+      "academicSessionId": {
         "hidden": false,
         "deps": ["academicSession/academicSessionId"]
       }
@@ -833,8 +933,8 @@
       "_name": {
         "generator": ["format", "%s - %s"],
         "deps": [
-          ["programmeOffering/programme", "programme/_name"],
-          ["programmeOffering/academicSession", "academicSession/_name"]
+          ["programmeOffering/programmeId", "programme/_name"],
+          ["programmeOffering/academicSessionId", "academicSession/_name"]
         ],
         "hidden": true
       },
@@ -844,12 +944,12 @@
       },
       "abbreviation": {
         "deps": [
-          ["programmeOffering/programme", "programme/abbreviation"]
+          ["programmeOffering/programmeId", "programme/abbreviation"]
         ]
       },
       "description": {
         "deps": [
-          ["programmeOffering/programme", "programme/description"]
+          ["programmeOffering/programmeId", "programme/description"]
         ]
       },
       "teachingLanguages":{
@@ -885,7 +985,7 @@
       "link": {
         "generator": ["format", "https://%s/programs/%s"],
         "deps": [
-          ["programmeOffering/organisation", "organisation/_linkDomain"], "programmeOffering/programmeOfferingId"
+          ["programmeOffering/organisationId", "organisation/_linkDomain"], "programmeOffering/programmeOfferingId"
         ]
       },
       "otherCodes": {
@@ -895,38 +995,72 @@
       "startDateTime": {
         "generator": ["format", "%tF"],
         "deps": [
-          ["programmeOffering/academicSession", "academicSession/startDateTime"]
+          ["programmeOffering/academicSessionId", "academicSession/startDateTime"]
         ]
       },
       "endDateTime": {
         "generator": ["format", "%tF"],
         "deps": [
-          ["programmeOffering/academicSession", "academicSession/endDateTime"]
+          ["programmeOffering/academicSessionId", "academicSession/endDateTime"]
         ]
       },
-      "_enrolStartDate": {
+      "enrolmentPeriods":{
+        "generator": ["arrayize"],
+        "deps": ["programmeOffering/_enrolmentPeriod"]
+      },
+      "_enrolmentPeriod":{
+        "generator": ["object", "startDateTime", "endDateTime", "targetGroups", "enrolmentType", "enrolmentUrl", "queueEnabled", "comment"],
+        "deps": [
+          "programmeOffering/_enrolStartDateTime", "programmeOffering/_enrolEndDateTime", "programmeOffering/_targetGroups", "programmeOffering/_enrolmentType", "programmeOffering/_enrolmentUrl", "programmeOffering/_queueEnabled", "programmeOffering/_comment"
+        ],
+        "hidden": true
+      },
+      "_comment":{
+        "generator": ["lorem-surf", "enrolment"],
+        "hidden": true
+      },
+      "_queueEnabled":{
+        "hidden": true,
+        "value": false
+      },
+      "_enrolmentUrl":{
+        "generator": ["format", "https://%s/enrol"],
+        "deps": [
+          ["programmeOffering/organisationId", "organisation/_linkDomain"]
+        ],
+        "hidden": true
+      },
+      "_enrolmentType":{
+        "value": "url",
+        "hidden": true
+      },
+      "_targetGroups":{
+        "generator": ["at-least-one-of", ["Group A", "Group B", "Group C"]],
+        "hidden": true
+      },
+      "_enrolStartDateTime": {
         "value": "2023-01-01",
         "hidden": true
       },
-      "_enrolEndDate": {
+      "_enrolEndDateTime": {
         "value": "2023-12-31",
         "hidden": true
       },
       "flexibleEntryPeriodStartDateTime": {
         "generator": ["format", "%tF"],
         "deps": [
-          ["programmeOffering/academicSession", "academicSession/startDateTime"]
+          ["programmeOffering/academicSessionId", "academicSession/startDateTime"]
         ]
       },
       "flexibleEntryPeriodEndDateTime": {
         "generator": ["format", "%tF"],
         "deps": [
-          ["programmeOffering/academicSession", "academicSession/endDateTime"]
+          ["programmeOffering/academicSessionId", "academicSession/endDateTime"]
         ]
       },
       "addresses": {
         "generator": ["arrayize"],
-        "deps": [["programmeOffering/organisation","organisation/_address"]]
+        "deps": [["programmeOffering/organisationId","organisation/_address"]]
       },
       "_otherCode": {
         "generator": ["object", "codeType", "code", "identifier"],
@@ -936,26 +1070,53 @@
       "_code": {
         "hidden": true,
         "generator": ["format", "%s"],
-        "deps": [["programmeOffering/programme","programme/_crohoCreboCode"]]
+        "deps": [["programmeOffering/programmeId","programme/_crohoCreboCode"]]
+      },
+      "_rioExplanationRequiredPermission": {
+        "hidden": true,
+        "generator": ["lorum-ipsum"]
+      },
+      "_rioRequiredPermissionRegistration": {
+        "hidden": true,
+        "generator": ["one-of", ["yes", "no"]]
+      },
+      "_rioRegistrationStatus": {
+        "hidden": true,
+        "generator": ["one-of", ["open", "closed"]]
+      },
+      "_rioModeOfDelivery": {
+        "hidden": true,
+        "generator": ["one-of", ["online", "hybrid", "presential", "blended", "lecture", "self_study", "coaching"]]
+      },
+      "_rioConsumer": {
+        "hidden": true,
+        "generator": ["object-with-optionals", {"explanationRequiredPermission": 0.1},
+                      "consumerKey", "explanationRequiredPermission", "requiredPermissionRegistration", "registrationStatus", "modeOfDelivery",
+                      "rio"],
+        "deps": ["programmeOffering/_rioExplanationRequiredPermission", "programmeOffering/_rioRequiredPermissionRegistration", "programmeOffering/_rioRegistrationStatus", "programmeOffering/_rioModeOfDelivery"]
+      },
+      "consumers": {
+        "generator": ["arrayize"],
+        "deps": ["programme/_rioConsumer"]
       }
     }
   },
   {
     "name": "courseOffering",
     "refs": {
-      "course": {
+      "courseId": {
         "deps": ["course/courseId"],
         "hidden": false
       },
-      "organisation": {
+      "organisationId": {
         "hidden": false,
         "deps": ["organisation/organisationId"]
       },
-      "academicSession": {
+      "academicSessionId": {
         "hidden": false,
         "deps": ["academicSession/academicSessionId"]
       },
-      "programmeOffering": {
+      "programmeOfferingId": {
         "hidden": false,
         "deps": ["programmeOffering/programmeOfferingId"]
       }
@@ -971,8 +1132,8 @@
       "_name": {
         "generator": ["format", "%s - %s"],
         "deps": [
-          ["courseOffering/course", "course/_name"],
-          ["courseOffering/academicSession", "academicSession/_name"]
+          ["courseOffering/courseId", "course/_name"],
+          ["courseOffering/academicSessionId", "academicSession/_name"]
         ],
         "hidden": true
       },
@@ -982,12 +1143,12 @@
       },
       "abbreviation": {
         "deps": [
-          ["courseOffering/course", "course/abbreviation"]
+          ["courseOffering/courseId", "course/abbreviation"]
         ]
       },
       "description": {
         "deps": [
-          ["courseOffering/course", "course/description"]
+          ["courseOffering/courseId", "course/description"]
         ]
       },
       "teachingLanguages":{
@@ -1023,7 +1184,7 @@
       "link": {
         "generator": ["format", "https://%s/offerings/%s"],
         "deps": [
-          ["courseOffering/organisation", "organisation/_linkDomain"], "courseOffering/courseOfferingId"
+          ["courseOffering/organisationId", "organisation/_linkDomain"], "courseOffering/courseOfferingId"
         ]
       },
       "otherCodes": {
@@ -1033,44 +1194,111 @@
       "startDateTime": {
         "generator": ["format", "%tF"],
         "deps": [
-          ["courseOffering/academicSession", "academicSession/startDateTime"]
+          ["courseOffering/academicSessionId", "academicSession/startDateTime"]
         ]
       },
       "endDateTime": {
         "generator": ["format", "%tF"],
         "deps": [
-          ["courseOffering/academicSession", "academicSession/endDateTime"]
+          ["courseOffering/academicSessionId", "academicSession/endDateTime"]
         ]
+      },
+      "enrolmentPeriods":{
+        "generator": ["arrayize"],
+        "deps": ["courseOffering/_enrolmentPeriod"]
+      },
+      "_enrolmentPeriod":{
+        "generator": ["object", "startDateTime", "endDateTime", "targetGroups", "enrolmentType", "enrolmentUrl", "queueEnabled", "comment"],
+        "deps": [
+          "courseOffering/_enrolStartDateTime", "courseOffering/_enrolEndDateTime", "courseOffering/_targetGroups", "courseOffering/_enrolmentType", "courseOffering/_enrolmentUrl", "courseOffering/_queueEnabled", "courseOffering/_comment"
+        ],
+        "hidden": true
+      },
+      "_comment":{
+        "generator": ["lorem-surf", "enrolment"],
+        "hidden": true
+      },
+      "_queueEnabled":{
+        "hidden": true,
+        "value": false
+      },
+      "_enrolmentUrl":{
+        "generator": ["format", "https://%s/enrol"],
+        "deps": [
+          ["courseOffering/organisationId", "organisation/_linkDomain"]
+        ],
+        "hidden": true
+      },
+      "_enrolmentType":{
+        "value": "url",
+        "hidden": true
+      },
+      "_targetGroups":{
+        "generator": ["at-least-one-of", ["Group A", "Group B", "Group C"]],
+        "hidden": true
       },
       "_enrolStartDateTime": {
-        "hidden": true,
-        "generator": ["format", "%tF"],
-        "deps": [
-          ["courseOffering/academicSession", "academicSession/startDateTime"]
-        ]
+        "value": "2023-01-01",
+        "hidden": true
       },
       "_enrolEndDateTime": {
-        "hidden": true,
-        "generator": ["format", "%tF"],
-        "deps": [
-          ["courseOffering/academicSession", "academicSession/endDateTime"]
-        ]
+        "value": "2023-12-31",
+        "hidden": true
       },
       "flexibleEntryPeriodStartDateTime": {
         "generator": ["format", "%tF"],
         "deps": [
-          ["courseOffering/academicSession", "academicSession/startDateTime"]
+          ["courseOffering/academicSessionId", "academicSession/startDateTime"]
         ]
       },
       "flexibleEntryPeriodEndDateTime": {
         "generator": ["format", "%tF"],
         "deps": [
-          ["courseOffering/academicSession", "academicSession/endDateTime"]
+          ["courseOffering/academicSessionId", "academicSession/endDateTime"]
         ]
       },
       "addresses": {
         "generator": ["arrayize"],
-        "deps": [["courseOffering/organisation", "organisation/_address"]]
+        "deps": [["courseOffering/organisationId", "organisation/_address"]]
+      }
+    }
+  },
+  {
+    "name": "learningOutcome",
+    "attributes": {
+      "learningOutcomeId": {
+        "generator": ["uuid"]
+      },
+      "primaryCode": {
+        "generator": ["object", "codeType", "code", "identifier"],
+        "deps": ["learningOutcome/learningOutcomeId"]
+      },
+      "name": {
+        "generator": ["language-typed-string"],
+        "deps": ["learningOutcome/_name"]
+      },
+      "_name": {
+        "generator": ["one-of", ["inzicht in de bijzondere eigenschappen van materialen", "nieuw talent op het gebied van programmeren", "kennis van de meestgebruikte ingrediënten in dit vak", "algemene empathie voor levende wezens", "nieuwe inzichten over het opdoen van kennis in een complexe wereld"]],
+        "hidden": true
+      },
+      "abbreviation": {
+        "generator": ["abbreviate"],
+        "deps": ["learningOutcome/_name"]
+      },
+      "description": {
+        "generator": ["language-typed-string"],
+        "deps": ["learningOutcome/_description"]
+      },
+      "_description": {
+        "generator": ["lorem-surf"],
+        "deps": ["learningOutcome/_name"],
+        "hidden": true
+      },
+      "complexityLevel": {
+        "generator": ["one-of", ["bloom_1", "bloom_2", "bloom_3", "bloom_4", "bloom_5", "bloom_6", "solo_0", "solo_1", "solo_2", "solo_3", "solo_4"]]
+      },
+      "fieldsOfStudy": {
+        "generator": ["one-of", ["0011", "0021", "0031", "0111", "0112", "0113", "0114", "0211", "0212", "0213", "0214", "0215", "0221", "0222", "0223", "0231", "0232", "0311", "0312", "0313", "0314", "0321", "0322", "0411", "0412", "0413", "0414", "0415", "0416", "0417", "0421", "0511", "0512", "0521", "0522", "0531", "0532", "0533", "0541", "0542", "0611", "0612", "0613", "0711", "0712", "0713", "0714", "0715", "0716", "0721", "0722", "0723", "0724", "0731", "0732", "0811", "0812", "0821", "0831", "0841", "0911", "0912", "0913", "0914", "0915", "0916", "0917", "0921", "0922", "0923", "1011", "1012", "1013", "1014", "1015", "1021", "1022", "1031", "1032", "1041"]]
       }
     }
   }
