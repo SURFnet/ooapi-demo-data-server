@@ -480,13 +480,6 @@
         "generator": ["arrayize"],
         "deps": ["programme/_rioPrivateCategoryItem"]
       },
-      "_rioConsentParticipationSTAP": {
-        "hidden": true,
-        "generator": ["weighted", {
-          "permission_granted": 1,
-          "permission_not_granted": 9
-        }]
-      },
       "_rioJointPartnerCodes": {
         "hidden": true,
         "value": ["123A321"]
@@ -526,16 +519,11 @@
           "no_accelerated_route": 20
         }]
       },
-      "_rioConsumer": {
-        "hidden": true,
+      "consumer": {
         "generator": ["object-with-optionals", {"specificationSubType": 0.2, "jointPartnerCodes": 0.1, "foreignPartners": 0.1},
-                      "consumerKey", "educationOffererCode", "educationLocationCode", "consentParticipationSTAP", "jointPartnerCodes", "foreignPartners", "deficiency", "requirementsActivities", "propaedeuticPhase", "studyChoiceCheck", "acceleratedRoute", "specificationSubType", "privateCategory", 
+                      "consumerKey", "educationOffererCode", "educationLocationCode", "jointPartnerCodes", "foreignPartners", "deficiency", "requirementsActivities", "propaedeuticPhase", "studyChoiceCheck", "acceleratedRoute", "specificationSubType", "privateCategory", 
                       "rio", "122A112", "123X122"],
-        "deps": ["programme/_rioConsentParticipationSTAP", "programme/_rioJointPartnerCodes", "programme/_rioForeignPartners", "programme/_rioDeficiency", "programme/_rioRequirementsActivities", "programme/_rioPropaedeuticPhase", "programme/_rioStudyChoiceCheck", "programme/_rioAcceleratedRoute", "programme/_rioSpecificationSubType", "programme/_rioPrivateCategory"]
-      },
-      "consumers": {
-        "generator": ["arrayize"],
-        "deps": ["programme/_rioConsumer"]
+        "deps": ["programme/_rioJointPartnerCodes", "programme/_rioForeignPartners", "programme/_rioDeficiency", "programme/_rioRequirementsActivities", "programme/_rioPropaedeuticPhase", "programme/_rioStudyChoiceCheck", "programme/_rioAcceleratedRoute", "programme/_rioSpecificationSubType", "programme/_rioPrivateCategory"]
       }
     }
   }
@@ -716,13 +704,6 @@
         "generator": ["format", "%tF"],
         "deps": ["course/_validTo"]
       },
-      "_rioConsentParticipationSTAP": {
-        "hidden": true,
-        "generator": ["weighted", {
-          "permission_granted": 1,
-          "permission_not_granted": 9
-        }]
-      },
       "_rioJointPartnerCodes": {
         "hidden": true,
         "value": ["123A321"]
@@ -731,16 +712,11 @@
         "hidden": true,
         "generator": ["at-least-one-of", ["Massachusetts Institute of Technology (MIT)", "University of Cambridge", "Stanford University", "University of Oxford", "Harvard University", "California Institute of Technology (Caltech)", "Imperial College London", "UCL (University College London)", "ETH Zurich (Swiss Federal Institute of Technology)", "University of Chicago", "National University of Singapore (NUS)", "Peking University"]]
       },
-      "_rioConsumer": {
-        "hidden": true,
+      "consumer": {
         "generator": ["object-with-optionals", {"jointPartnerCodes": 0.1, "foreignPartners": 0.1},
-                      "consumerKey", "educationOffererCode", "educationLocationCode", "consentParticipationSTAP", "jointPartnerCodes", "foreignPartners",
+                      "consumerKey", "educationOffererCode", "educationLocationCode", "jointPartnerCodes", "foreignPartners",
                       "rio", "122A112", "123X122"],
-        "deps": ["course/_rioConsentParticipationSTAP", "course/_rioJointPartnerCodes", "course/_rioForeignPartners"]
-      },
-      "consumers": {
-        "generator": ["array"],
-        "deps": ["course/_rioConsumer"]
+        "deps": ["course/_rioJointPartnerCodes", "course/_rioForeignPartners"]
       }
     }
   },
@@ -954,7 +930,7 @@
       },
       "teachingLanguages":{
         "generator": ["arrayize"],
-        "deps": ["programme/_teachingLanguage"]
+        "deps": ["programmeOffering/_teachingLanguage"]
       },
       "_teachingLanguage": {
         "generator": ["one-of", ["nld", "eng"]],
@@ -1088,16 +1064,11 @@
         "hidden": true,
         "generator": ["one-of", ["online", "hybrid", "presential", "blended", "lecture", "self_study", "coaching"]]
       },
-      "_rioConsumer": {
-        "hidden": true,
+      "consumer": {
         "generator": ["object-with-optionals", {"explanationRequiredPermission": 0.1},
                       "consumerKey", "explanationRequiredPermission", "requiredPermissionRegistration", "registrationStatus", "modeOfDelivery",
                       "rio"],
         "deps": ["programmeOffering/_rioExplanationRequiredPermission", "programmeOffering/_rioRequiredPermissionRegistration", "programmeOffering/_rioRegistrationStatus", "programmeOffering/_rioModeOfDelivery"]
-      },
-      "consumers": {
-        "generator": ["arrayize"],
-        "deps": ["programme/_rioConsumer"]
       }
     }
   },
