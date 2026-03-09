@@ -5,6 +5,7 @@
    [clojure.instant :refer [read-instant-date read-instant-calendar]]
    [clojure.string :as str]
    [clojure.set :refer [rename-keys intersection difference]]
+   [clojure.walk :as walk]
    [integrant.core :as ig]
    [clojure.tools.logging :as log]
    [ooapi-demo-data-server.data :as data]
@@ -331,6 +332,42 @@
     (vec x)
     [x]))
 
+
+(defn- tokenize-fields-param
+  [fields]
+  (re-seq #"[(),]|[^(),]+" fields))
+
+;; See "fields" at https://openonderwijsapi.nl/specification/v6.0/docs.html#tag/courses/operation/listCourseById
+
+(defn parse-fields-paths
+  [fields]
+  (when fields
+    (let [tokens (re-seq #"[(),]|[^(),]+" fields)]
+      (loop [paths []
+             current-path []
+             [token & tokens] tokens]
+        (if token
+          (case token
+            ")" (recur paths (vec (drop-last current-path)) tokens)
+            "," (recur paths current-path tokens)
+            "(" (recur paths current-path tokens)
+            (if (= "(" (first tokens))
+              (recur paths (conj current-path token) tokens)
+              (recur (conj paths (conj current-path token)) current-path tokens)))
+          paths)))))
+
+(defn select-fields
+  [{{:keys [fields]} :query-params} item]
+  (let [paths (parse-fields-paths fields)]
+    (if (seq paths)
+      (reduce (fn [m path]
+                (if (get-in item path)
+                  (assoc-in m path (get-in item path))
+                  m))
+              {}
+              paths)
+      item)))
+
 (defn expand-item
   [req item]
   (let [datatypes (vectorize (req->datatype req))
@@ -356,7 +393,9 @@
                             (apply-select req)
                             (apply-filters req)
                             (map (partial expand-item req))
-                            (map clean-item))
+                            (map clean-item)
+                            (map walk/stringify-keys)
+                            (map (partial select-fields req)))
         total-pages (calc-total-pages page-size (count filtered-items))
         supports-pagination? (or (= ooapi-version "v5") (= ooapi-version "v6"))]
     (cond-> {:pageSize page-size
@@ -397,44 +436,20 @@
       (get-item-in-many req)
       (get-item-in-one req))))
 
-(defn- tokenize-fields-param
-  [fields]
-  (re-seq #"[(),]|[^(),]+" fields))
-
-;; See "fields" at https://openonderwijsapi.nl/specification/v6.0/docs.html#tag/courses/operation/listCourseById
-
-(defn parse-fields-paths
-  [fields]
-  (let [tokens (re-seq #"[(),]|[^(),]+" fields)]
-    (loop [paths []
-           current-path []
-           [token & tokens] tokens]
-      (if token
-        (case token
-          ")" (recur paths (vec (drop-last current-path)) tokens)
-          "," (recur paths current-path tokens)
-          "(" (recur paths current-path tokens)
-          (if (= "(" (first tokens))
-            (recur paths (conj current-path (keyword token)) tokens)
-            (recur (conj paths (conj current-path (keyword token))) current-path tokens)))
-        paths))))
-
-(defn select-fields
-  [{{:keys [fields]} :query-params} item]
-  (if (seq? fields)
-    ()
-    item))
-
 (defn one-handler
   [req]
   (->> (get-item req)
        (expand-item req)
-       (clean-item)))
+       (clean-item)
+       (walk/stringify-keys)
+       (select-fields req)))
 
 (defn singleton-handler
   [req]
   (let [datatype (req->datatype req)]
-    (first (get data/data datatype))))
+    (-> (first (get data/data datatype))
+        (walk/stringify-keys)
+        (select-fields req))))
 
 (defn handler
   [req]
@@ -555,4 +570,3 @@
 ;;        first)
 
 ;;   (count (:course data/data))
- 
