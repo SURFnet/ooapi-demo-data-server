@@ -78,6 +78,10 @@
     (when (seq xs)
       xs)))
 
+(defmethod config/generator "cons" [_]
+  (fn _cons [_ x xs]
+    (cons x xs)))
+
 (defmethod config/generator "arrayize" [_]
   (fn arrayize [_ x]
     (when x [x])))

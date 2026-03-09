@@ -529,15 +529,22 @@
   }
   ,
   {
+    "name": "course-programme",
+    "refs": {
+      "pair": {
+        "unique": [false, false],
+        "deps": ["course/courseId", "programme/programmeId"],
+        "attributes": ["course", "programme"],
+        "hidden": false
+      }
+    }
+  },
+  {
     "name": "course",
     "refs": {
       "organisationId": {
         "hidden": false,
         "deps": ["organisation/organisationId"]
-      },
-      "_programme": {
-        "hidden": true,
-        "deps": ["programme/programmeId"]
       },
       "_coordinator": {
         "hidden": true,
@@ -546,9 +553,17 @@
       "_learningOutcome": {
         "hidden": true,
         "deps": ["learningOutcome/learningOutcomeId"]
+      },
+      "_primaryProgramme": {
+        "hidden": true,
+        "deps": ["programme/programmeId"]
       }
     },
     "attributes": {
+      "programmeIds": {
+        "generator": ["cons"],
+        "deps": [["course/_primaryProgramme", "programme/programmeId"] , [["course-programme/course","course/courseId"], "course-programme/programme", "programme/programmeId"]]
+      },
       "courseId": {
         "generator": ["uuid"]
       },
@@ -588,7 +603,7 @@
       },
       "studyLoad": {
         "generator": ["object", "studyLoadUnit", "value"],
-        "deps": [["course/_programme", "programme/_studyLoadUnit"], ["course/_programme", "programme/_studyLoadValue"]]
+        "deps": [["course/_primaryProgramme","programme/_studyLoadUnit"], ["course/_primaryProgramme", "programme/_studyLoadValue"]]
       },
       "modesOfDelivery": {
         "generator": ["at-least-one-of", ["blended","coil","hybrid","joint_delivery","online","presential","project_based","research_lab_based","work_based"]]
@@ -680,12 +695,8 @@
         "hidden": true,
         "generator": ["one-of-keyed-resource", "seeds/programme-names.yml"],
         "deps": [
-          ["course/_programme", "programme/_crohoCreboCodeCategory"]
+          ["course/_primaryProgramme", "programme/_crohoCreboCodeCategory"]
         ]
-      },
-      "programmeIds": {
-        "generator": ["arrayize"],
-        "deps": ["course/_programme"]
       },
       "_validFrom": {
         "generator": ["date", "1990-01-01", "2020-12-31"],
