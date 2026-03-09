@@ -397,6 +397,34 @@
       (get-item-in-many req)
       (get-item-in-one req))))
 
+(defn- tokenize-fields-param
+  [fields]
+  (re-seq #"[(),]|[^(),]+" fields))
+
+;; See "fields" at https://openonderwijsapi.nl/specification/v6.0/docs.html#tag/courses/operation/listCourseById
+
+(defn parse-fields-paths
+  [fields]
+  (let [tokens (re-seq #"[(),]|[^(),]+" fields)]
+    (loop [paths []
+           current-path []
+           [token & tokens] tokens]
+      (if token
+        (case token
+          ")" (recur paths (vec (drop-last current-path)) tokens)
+          "," (recur paths current-path tokens)
+          "(" (recur paths current-path tokens)
+          (if (= "(" (first tokens))
+            (recur paths (conj current-path (keyword token)) tokens)
+            (recur (conj paths (conj current-path (keyword token))) current-path tokens)))
+        paths))))
+
+(defn select-fields
+  [{{:keys [fields]} :query-params} item]
+  (if (seq? fields)
+    ()
+    item))
+
 (defn one-handler
   [req]
   (->> (get-item req)
