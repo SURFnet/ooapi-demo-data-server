@@ -7,7 +7,7 @@
 
 ;; See "fields" at https://openonderwijsapi.nl/specification/v6.0/docs.html#tag/courses/operation/listCourseById
 
-(defn parse-fields-paths
+(defn- parse-fields-paths
   [fields]
   (when fields
     (let [tokens (re-seq #"[(),]|[^(),]+" fields)]
@@ -46,7 +46,7 @@
     :programme/name
     :programme/primaryCode})
 
-(defn select-required
+(defn- select-required
   [item]
   (->> item
        (walk/postwalk (fn [x]
@@ -58,7 +58,21 @@
                                      {} x)
                           x)))))
 
-;; TODO: allow selection from fields in nested vectors
+(defn- copy-path
+  [dest src [k & rest-path :as path]]
+  (cond
+    (empty? path)
+    src
+
+    (sequential? src)
+    (mapv (fn [d s]
+            (copy-path d s path))
+          (or dest (repeat (count src) nil)) src)
+
+    (map? src)
+    (if (contains? src k)
+      (update dest k #(copy-path % (get src k) rest-path))
+      dest)))
 
 (defn select-fields
   [{{:keys [fields]} :query-params} item]
@@ -68,9 +82,7 @@
         stringified (walk/stringify-keys item)]
     (if (seq paths)
       (reduce (fn [m path]
-                (if (get-in stringified path)
-                  (assoc-in m path (get-in stringified path))
-                  m))
+                (copy-path m stringified path))
               (select-required item)
               paths)
       stringified)))
