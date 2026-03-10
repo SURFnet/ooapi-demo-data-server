@@ -10,6 +10,7 @@
    [clojure.tools.logging :as log]
    [ooapi-demo-data-server.data :as data]
    [ooapi-demo-data-server.common :as common]
+   [ooapi-demo-data-server.fields-param :as fields-param]
    [reitit.ring :as ring]
    [ring.middleware.params :as params]))
 
@@ -332,42 +333,6 @@
     (vec x)
     [x]))
 
-
-(defn- tokenize-fields-param
-  [fields]
-  (re-seq #"[(),]|[^(),]+" fields))
-
-;; See "fields" at https://openonderwijsapi.nl/specification/v6.0/docs.html#tag/courses/operation/listCourseById
-
-(defn parse-fields-paths
-  [fields]
-  (when fields
-    (let [tokens (re-seq #"[(),]|[^(),]+" fields)]
-      (loop [paths []
-             current-path []
-             [token & tokens] tokens]
-        (if token
-          (case token
-            ")" (recur paths (vec (drop-last current-path)) tokens)
-            "," (recur paths current-path tokens)
-            "(" (recur paths current-path tokens)
-            (if (= "(" (first tokens))
-              (recur paths (conj current-path token) tokens)
-              (recur (conj paths (conj current-path token)) current-path tokens)))
-          paths)))))
-
-(defn select-fields
-  [{{:keys [fields]} :query-params} item]
-  (let [paths (parse-fields-paths fields)]
-    (if (seq paths)
-      (reduce (fn [m path]
-                (if (get-in item path)
-                  (assoc-in m path (get-in item path))
-                  m))
-              {}
-              paths)
-      item)))
-
 (defn expand-item
   [req item]
   (let [datatypes (vectorize (req->datatype req))
@@ -394,8 +359,7 @@
                             (apply-filters req)
                             (map (partial expand-item req))
                             (map clean-item)
-                            (map walk/stringify-keys)
-                            (map (partial select-fields req)))
+                            (map (partial fields-param/select-fields req)))
         total-pages (calc-total-pages page-size (count filtered-items))
         supports-pagination? (or (= ooapi-version "v5") (= ooapi-version "v6"))]
     (cond-> {:pageSize page-size
@@ -441,15 +405,13 @@
   (->> (get-item req)
        (expand-item req)
        (clean-item)
-       (walk/stringify-keys)
-       (select-fields req)))
+       (fields-param/select-fields req)))
 
 (defn singleton-handler
   [req]
   (let [datatype (req->datatype req)]
     (-> (first (get data/data datatype))
-        (walk/stringify-keys)
-        (select-fields req))))
+        (fields-param/select-fields req))))
 
 (defn handler
   [req]
