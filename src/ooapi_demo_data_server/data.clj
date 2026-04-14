@@ -12,7 +12,7 @@
   (:import java.util.Calendar))
 
 ;; use ooapi version specific resource files
-(def ^:dynamic ooapi-version (or (System/getenv "OOAPI_VERSION") "v5"))
+(def ^:dynamic ooapi-version (or (System/getenv "OOAPI_VERSION") "v6"))
 
 (def schema-file (str ooapi-version "/schema.json"))
 
