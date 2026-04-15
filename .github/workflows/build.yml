@@ -17,7 +17,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: eduhub-docker-production.artie.ia.surfsara.nl/ooapi-demo-data-server
+          images: |
+            eduhub-docker-production.artie.ia.surfsara.nl/ooapi-demo-data-server
+            cr.surf.nl/oeapi-demodata/demodata
           tags: |
             type=match,pattern=v\d+.\d+
             type=sha,format=long
@@ -29,6 +31,12 @@ jobs:
           registry: eduhub-docker-production.artie.ia.surfsara.nl
           username: ${{ secrets.ARTIFACTORY_USERNAME }}
           password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: cr.surf.nl
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
