@@ -410,8 +410,7 @@
 (defn singleton-handler
   [req]
   (let [datatype (req->datatype req)]
-    (-> (first (get data/data datatype))
-        (fields-param/select-fields req))))
+    (first (get data/data datatype))))
 
 (defn handler
   [req]
