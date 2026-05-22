@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.10] - 2026-05-22
+
+### Fixed
+- Bump `nl.surf/demo-data` to 1.2.1 so that the `SEED` env var produces reproducible data across JVM invocations
+
 ## [1.9] - 2026-04-10
 - Update dependencies
 
