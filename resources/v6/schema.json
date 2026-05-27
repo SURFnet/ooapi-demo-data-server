@@ -107,7 +107,7 @@
       },
       "_addressCountryCode": {
         "hidden": true,
-        "value": "NL"
+        "generator": ["object", "iso3166-1-alpha2", "NL"]
       },
       "_addressGeoLocation": {
         "hidden": true,
@@ -325,6 +325,11 @@
         "generator": ["one-of", ["nld", "eng"]]
       },
       "studyLoad": {
+        "generator": ["arrayize"],
+        "deps": ["programme/_studyLoadObject"]
+      },
+      "_studyLoadObject": {
+        "hidden": true,
         "generator": ["object", "studyLoadUnit", "value"],
         "deps": ["programme/_studyLoadUnit", "programme/_studyLoadValue"]
       },
@@ -601,7 +606,12 @@
         "generator": ["one-of", ["nld", "eng"]],
         "hidden": true
       },
-      "studyLoad": {
+       "studyLoad": {
+        "generator": ["arrayize"],
+        "deps": ["course/_studyLoadObject"]
+      },
+      "_studyLoadObject": {
+        "hidden": true,
         "generator": ["object", "studyLoadUnit", "value"],
         "deps": [["course/_primaryProgramme","programme/_studyLoadUnit"], ["course/_primaryProgramme", "programme/_studyLoadValue"]]
       },
