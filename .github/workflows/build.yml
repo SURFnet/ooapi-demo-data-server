@@ -49,7 +49,7 @@ jobs:
         run: |
           images=""
           for tag in ${TAGS}; do
-            cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${tag}@${DIGEST}
+            cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${tag}@${DIGEST} --new-bundle-format=false --use-signing-config=false
           done
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
