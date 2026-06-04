@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.11] - 2026-06-04
+
+### Changed
+- Update dependencies (Clojure 1.12.5, SLF4J 2.0.18, Logback 1.5.34 incl. CVE-2026-9828 & CVE-2026-10532 fixes, clj-watson 6.1.0)
+
 ## [1.10] - 2026-05-22
 
 ### Fixed
