@@ -549,6 +549,15 @@
                                                                                      :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
                                                                                      :ooapi/select      {:refs #{:programmeOffering/organisationId}
                                                                                                          :path [:path-params :organisationId]}}
+   "/organisations/{organisationId}/programmes"                                     {:ooapi/cardinality :many
+                                                                                     :ooapi/datatype    :programme
+                                                                                     :ooapi/id-path     [:path-params :organisationId]
+                                                                                     :ooapi/expands     #{:organisation/parent :organisation/children}
+                                                                                     :ooapi/q-fields    #{:name :abbreviation :description}
+                                                                                     :ooapi/filters     #{:teachingLanguage :programmeType :qualificationAwarded :levelOfQualification :fieldsOfStudy}
+                                                                                     :ooapi/sort        #{"programmeId" "name"}
+                                                                                     :ooapi/select      {:refs #{:programme/organisationId}
+                                                                                                         :path [:path-params :organisationId]}}
 
    "/academic-sessions"                                                            {:ooapi/cardinality :many
                                                                                     :ooapi/datatype    :academicSession
