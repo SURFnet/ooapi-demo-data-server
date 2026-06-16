@@ -523,125 +523,165 @@
                                                                                     :ooapi/id-path     [:path-params :personId]}})
 
 (def route-data-v6
-  {"/"                                                                             {:ooapi/cardinality :singleton
-                                                                                    :ooapi/datatype    :service}
-   "/organisations"                                                                {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :organisation
-                                                                                    :ooapi/filters     #{:organisationType}
-                                                                                    :ooapi/sort        #{"name" "organisationId"}}
-   "/organisations/{organisationId}"                                                {:ooapi/cardinality :one
-                                                                                     :ooapi/datatype    :organisation
-                                                                                     :ooapi/id-path     [:path-params :organisationId]
-                                                                                     :ooapi/expands     #{:organisation/parent :organisation/children}}
-   "/organisations/{organisationId}/course-offerings"                               {:ooapi/cardinality :many
-                                                                                     :ooapi/datatype    :courseOffering
-                                                                                     :ooapi/id-path     [:path-params :organisationId]
-                                                                                     :ooapi/expands     #{:organisation/parent :organisation/children}
-                                                                                     :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
-                                                                                     :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
-                                                                                     :ooapi/select      {:refs #{:courseOffering/organisationId}
-                                                                                                         :path [:path-params :organisationId]}}
-   "/organisations/{organisationId}/programme-offerings"                            {:ooapi/cardinality :many
-                                                                                     :ooapi/datatype    :programmeOffering
-                                                                                     :ooapi/id-path     [:path-params :organisationId]
-                                                                                     :ooapi/expands     #{:organisation/parent :organisation/children}
-                                                                                     :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
-                                                                                     :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
-                                                                                     :ooapi/select      {:refs #{:programmeOffering/organisationId}
-                                                                                                         :path [:path-params :organisationId]}}
-   "/organisations/{organisationId}/programmes"                                     {:ooapi/cardinality :many
-                                                                                     :ooapi/datatype    :programme
-                                                                                     :ooapi/id-path     [:path-params :organisationId]
-                                                                                     :ooapi/expands     #{:organisation/parent :organisation/children}
-                                                                                     :ooapi/q-fields    #{:name :abbreviation :description}
-                                                                                     :ooapi/filters     #{:teachingLanguage :programmeType :qualificationAwarded :levelOfQualification :fieldsOfStudy}
-                                                                                     :ooapi/sort        #{"programmeId" "name"}
-                                                                                     :ooapi/select      {:refs #{:programme/organisationId}
-                                                                                                         :path [:path-params :organisationId]}}
+  {"/"
+   {:ooapi/cardinality :singleton
+    :ooapi/datatype    :service}
 
-   "/academic-sessions"                                                            {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :academicSession
-                                                                                    :ooapi/filters     #{:academicSessionType}
-                                                                                    :ooapi/sort        #{"startDateTime" "academicSessionId" "name"}}
-   "/academic-sessions/{academicSessionId}"                                        {:ooapi/cardinality :one
-                                                                                    :ooapi/datatype    :academicSession
-                                                                                    :ooapi/id-path     [:path-params :academicSessionId]
-                                                                                    :ooapi/expands     #{:academicSession/parent :academicSession/children}}
+   "/organisations"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :organisation
+    :ooapi/filters     #{:organisationType}
+    :ooapi/sort        #{"name" "organisationId"}}
 
-   "/academic-sessions/{academicSessionId}/course-offerings"                       {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :courseOffering
-                                                                                    :ooapi/id-path     [:path-params :academicSessionId]
-                                                                                    :ooapi/expands     #{:academicSession/parent :academicSession/children}
-                                                                                    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
-                                                                                    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
-                                                                                    :ooapi/select      {:refs #{:courseOffering/academicSessionId}
-                                                                                                        :path [:path-params :academicSessionId]}}
-   "/academic-sessions/{academicSessionId}/programme-offerings"                    {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :programmeOffering
-                                                                                    :ooapi/id-path     [:path-params :academicSessionId]
-                                                                                    :ooapi/expands     #{:academicSession/parent :academicSession/children}
-                                                                                    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
-                                                                                    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
-                                                                                    :ooapi/select      {:refs #{:programmeOffering/academicSessionId}
-                                                                                                        :path [:path-params :academicSessionId]}}
-   "/courses"                                                                      {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :course
-                                                                                    :ooapi/filters     #{:teachingLanguage :level :modeOfDelivery}
-                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
-                                                                                    :ooapi/sort        #{"name" "courseId"}}
-   "/courses/{courseId}"                                                           {:ooapi/cardinality :one
-                                                                                    :ooapi/datatype    :course
-                                                                                    :ooapi/id-path     [:path-params :courseId]
-                                                                                    :ooapi/expands     #{:course/coordinators :course/programmes :course/organisation :course/learningOutcomes}}
-   "/courses/{courseId}/course-offerings"                                          {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :courseOffering
-                                                                                    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
-                                                                                    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
-                                                                                    :ooapi/select      {:refs #{:courseOffering/courseId}
-                                                                                                        :path [:path-params :courseId]}}
-   "/programmes"                                                                   {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :programme
-                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
-                                                                                    :ooapi/filters     #{:teachingLanguage :programmeType :qualificationAwarded :levelOfQualification :fieldsOfStudy}
-                                                                                    :ooapi/sort        #{"programmeId" "name"}}
-   "/programmes/{programmeId}"                                                     {:ooapi/cardinality :one
-                                                                                    :ooapi/datatype    :programme
-                                                                                    :ooapi/id-path     [:path-params :programmeId]
-                                                                                    :ooapi/expands     #{:programme/parent :programme/children :programme/coordinators :programme/organisation :programme/learningOutcomes}}
-   "/programmes/{programmeId}/programmes"                                          {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :programme
-                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
-                                                                                    :ooapi/filters     #{:teachingLanguage  :programmeType :qualificationAwarded :levelOfQualification :fieldsOfStudy}
-                                                                                    :ooapi/sort        #{"programmeId" "name"}
-                                                                                    :ooapi/select      {:refs #{:programme/parentId}
-                                                                                                        :path [:path-params :programmeId]}}
-   "/programmes/{programmeId}/courses"                                             {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :course
-                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
-                                                                                    :ooapi/filters     #{:teachingLanguages :level :modeOfDelivery}
-                                                                                    :ooapi/sort        #{"courseId" "name"}
-                                                                                    :ooapi/select      {:refs #{:course/programmeIds}
-                                                                                                        :path [:path-params :programmeId]}}
-   "/programmes/{programmeId}/programme-offerings"                                 {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :programmeOffering
-                                                                                    :ooapi/q-fields    #{:name :abbreviation :description}
-                                                                                    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
-                                                                                    :ooapi/sort        #{"startDate" "offeringId" "name" "endDate"}
-                                                                                    :ooapi/select      {:refs #{:programmeOffering/programmeId}
-                                                                                                        :path [:path-params :programmeId]}}
-   "/persons"                                                                      {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :person
-                                                                                    :ooapi/filters     #{:affiliations}
-                                                                                    :ooapi/sort        #{"personId" "givenName" "surname" "displayName"}}
-   "/persons/{personId}"                                                           {:ooapi/cardinality :one
-                                                                                    :ooapi/datatype    :person
-                                                                                    :ooapi/id-path     [:path-params :personId]}
-   "/learning-outcomes"                                                            {:ooapi/cardinality :many
-                                                                                    :ooapi/datatype    :learningOutcome}
-   "/learning-outcomes/{learningOutcomeId}"                                        {:ooapi/cardinality :one
-                                                                                    :ooapi/datatype    :learningOutcome
-                                                                                    :ooapi/id-path     [:path-params :learningOutcomeId]}
-   })
+   "/organisations/{organisationId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :organisation
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/expands     #{:organisation/parent :organisation/children}}
+
+   "/organisations/{organisationId}/course-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :courseOffering
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/expands     #{:organisation/parent :organisation/children}
+    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
+    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
+    :ooapi/select      {:refs #{:courseOffering/organisationId}
+                        :path [:path-params :organisationId]}}
+
+   "/organisations/{organisationId}/programme-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :programmeOffering
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/expands     #{:organisation/parent :organisation/children}
+    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
+    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
+    :ooapi/select      {:refs #{:programmeOffering/organisationId}
+                        :path [:path-params :organisationId]}}
+
+   "/organisations/{organisationId}/programmes"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :programme
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/expands     #{:organisation/parent :organisation/children}
+    :ooapi/q-fields    #{:name :abbreviation :description}
+    :ooapi/filters     #{:teachingLanguage :programmeType :qualificationAwarded :levelOfQualification :fieldsOfStudy}
+    :ooapi/sort        #{"programmeId" "name"}
+    :ooapi/select      {:refs #{:programme/organisationId}
+                        :path [:path-params :organisationId]}}
+
+   "/academic-sessions"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :academicSession
+    :ooapi/filters     #{:academicSessionType}
+    :ooapi/sort        #{"startDateTime" "academicSessionId" "name"}}
+
+   "/academic-sessions/{academicSessionId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :academicSession
+    :ooapi/id-path     [:path-params :academicSessionId]
+    :ooapi/expands     #{:academicSession/parent :academicSession/children}}
+
+   "/academic-sessions/{academicSessionId}/course-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :courseOffering
+    :ooapi/id-path     [:path-params :academicSessionId]
+    :ooapi/expands     #{:academicSession/parent :academicSession/children}
+    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
+    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
+    :ooapi/select      {:refs #{:courseOffering/academicSessionId}
+                        :path [:path-params :academicSessionId]}}
+
+   "/academic-sessions/{academicSessionId}/programme-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :programmeOffering
+    :ooapi/id-path     [:path-params :academicSessionId]
+    :ooapi/expands     #{:academicSession/parent :academicSession/children}
+    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
+    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
+    :ooapi/select      {:refs #{:programmeOffering/academicSessionId}
+                        :path [:path-params :academicSessionId]}}
+
+   "/courses"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :course
+    :ooapi/filters     #{:teachingLanguage :level :modeOfDelivery}
+    :ooapi/q-fields    #{:name :abbreviation :description}
+    :ooapi/sort        #{"name" "courseId"}}
+
+   "/courses/{courseId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :course
+    :ooapi/id-path     [:path-params :courseId]
+    :ooapi/expands     #{:course/coordinators :course/programmes :course/organisation :course/learningOutcomes}}
+
+   "/courses/{courseId}/course-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :courseOffering
+    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
+    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
+    :ooapi/select      {:refs #{:courseOffering/courseId}
+                        :path [:path-params :courseId]}}
+
+   "/programmes"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :programme
+    :ooapi/q-fields    #{:name :abbreviation :description}
+    :ooapi/filters     #{:teachingLanguage :programmeType :qualificationAwarded :levelOfQualification :fieldsOfStudy}
+    :ooapi/sort        #{"programmeId" "name"}}
+
+   "/programmes/{programmeId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :programme
+    :ooapi/id-path     [:path-params :programmeId]
+    :ooapi/expands     #{:programme/parent :programme/children :programme/coordinators :programme/organisation :programme/learningOutcomes}}
+
+   "/programmes/{programmeId}/programmes"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :programme
+    :ooapi/q-fields    #{:name :abbreviation :description}
+    :ooapi/filters     #{:teachingLanguage  :programmeType :qualificationAwarded :levelOfQualification :fieldsOfStudy}
+    :ooapi/sort        #{"programmeId" "name"}
+    :ooapi/select      {:refs #{:programme/parentId}
+                        :path [:path-params :programmeId]}}
+
+   "/programmes/{programmeId}/courses"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :course
+    :ooapi/q-fields    #{:name :abbreviation :description}
+    :ooapi/filters     #{:teachingLanguages :level :modeOfDelivery}
+    :ooapi/sort        #{"courseId" "name"}
+    :ooapi/select      {:refs #{:course/programmeIds}
+                        :path [:path-params :programmeId]}}
+
+   "/programmes/{programmeId}/programme-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :programmeOffering
+    :ooapi/q-fields    #{:name :abbreviation :description}
+    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
+    :ooapi/sort        #{"startDate" "offeringId" "name" "endDate"}
+    :ooapi/select      {:refs #{:programmeOffering/programmeId}
+                        :path [:path-params :programmeId]}}
+
+   "/persons"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :person
+    :ooapi/filters     #{:affiliations}
+    :ooapi/sort        #{"personId" "givenName" "surname" "displayName"}}
+
+   "/persons/{personId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :person
+    :ooapi/id-path     [:path-params :personId]}
+
+   "/learning-outcomes"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :learningOutcome}
+
+   "/learning-outcomes/{learningOutcomeId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :learningOutcome
+    :ooapi/id-path     [:path-params :learningOutcomeId]}})
 
 ;; use ooapi version specific data
 (def route-data
