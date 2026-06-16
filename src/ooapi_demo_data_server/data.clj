@@ -570,6 +570,17 @@
     :ooapi/select      {:refs #{:programme/organisationId}
                         :path [:path-params :organisationId]}}
 
+   "/organisations/{organisationId}/courses"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :course
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/expands     #{:organisation/parent :organisation/children}
+    :ooapi/filters     #{:teachingLanguage :level :modeOfDelivery}
+    :ooapi/q-fields    #{:name :abbreviation :description}
+    :ooapi/sort        #{"name" "courseId"}
+    :ooapi/select      {:refs #{:programme/organisationId}
+                        :path [:path-params :organisationId]}}
+
    "/academic-sessions"
    {:ooapi/cardinality :many
     :ooapi/datatype    :academicSession
