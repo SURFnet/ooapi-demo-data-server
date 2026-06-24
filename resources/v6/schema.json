@@ -274,6 +274,10 @@
       "_learningOutcome": {
         "hidden": true,
         "deps": ["learningOutcome/learningOutcomeId"]
+      },
+      "_specification": {
+        "hidden": true,
+        "deps": ["programme/programmeId"]
       }
     },
     "attributes": {
@@ -287,11 +291,7 @@
       "programmeType": {
         "generator": ["weighted", {
           "programme": 20,
-          "specification": 15,
-          "minor": 10,
-          "honours": 1,
-          "specialisation": 1,
-          "track": 1
+          "specification": 15
         }]
       },
       "name": {
@@ -524,11 +524,39 @@
           "no_accelerated_route": 20
         }]
       },
+      "_specificationType": {
+        "hidden": true,
+        "generator": ["weighted", {
+          "programme": 2,
+          "variant": 1,
+          "cluster": 0.1,
+          "course": 0.2,
+          "private": 0.05
+        }]
+      },
+      "formalDocument": {
+        "generator": ["one-of", [
+          "certificate",
+          "diploma",
+          "micro_credential_certificate",
+          "school_advice",
+          "testimonial",
+          "no_official_document"
+        ]]
+      },
+      "_sector": {
+        "hidden": true,
+        "generator": ["one-of", [
+          "secondary_vocational_education",
+          "higher_professional_education",
+          "university_education"
+        ]]
+      },
       "consumer": {
         "generator": ["object-with-optionals", {"specificationSubType": 0.2, "jointPartnerCodes": 0.1, "foreignPartners": 0.1},
-                      "consumerKey", "educationOffererCode", "educationLocationCode", "jointPartnerCodes", "foreignPartners", "deficiency", "requirementsActivities", "propaedeuticPhase", "studyChoiceCheck", "acceleratedRoute", "specificationSubType", "privateCategory", 
+                      "consumerKey", "educationOffererCode", "educationLocationCode", "jointPartnerCodes", "foreignPartners", "deficiency", "requirementsActivities", "propaedeuticPhase", "studyChoiceCheck", "acceleratedRoute", "specificationSubType", "privateCategory", "specificationId", "specificationType","sector",
                       "rio", "122A112", "123X122"],
-        "deps": ["programme/_rioJointPartnerCodes", "programme/_rioForeignPartners", "programme/_rioDeficiency", "programme/_rioRequirementsActivities", "programme/_rioPropaedeuticPhase", "programme/_rioStudyChoiceCheck", "programme/_rioAcceleratedRoute", "programme/_rioSpecificationSubType", "programme/_rioPrivateCategory"]
+        "deps": ["programme/_rioJointPartnerCodes", "programme/_rioForeignPartners", "programme/_rioDeficiency", "programme/_rioRequirementsActivities", "programme/_rioPropaedeuticPhase", "programme/_rioStudyChoiceCheck", "programme/_rioAcceleratedRoute", "programme/_rioSpecificationSubType", "programme/_rioPrivateCategory", ["programme/_specification", "programme/programmeId"], "programme/_specificationType", "programme/_sector"]
       }
     }
   }
@@ -560,6 +588,10 @@
         "deps": ["learningOutcome/learningOutcomeId"]
       },
       "_primaryProgramme": {
+        "hidden": true,
+        "deps": ["programme/programmeId"]
+      },
+      "_specification": {
         "hidden": true,
         "deps": ["programme/programmeId"]
       }
@@ -735,9 +767,9 @@
       },
       "consumer": {
         "generator": ["object-with-optionals", {"jointPartnerCodes": 0.1, "foreignPartners": 0.1},
-                      "consumerKey", "educationOffererCode", "educationLocationCode", "jointPartnerCodes", "foreignPartners",
+                      "consumerKey", "educationOffererCode", "educationLocationCode", "specificationId", "jointPartnerCodes", "foreignPartners",
                       "rio", "122A112", "123X122"],
-        "deps": ["course/_rioJointPartnerCodes", "course/_rioForeignPartners"]
+        "deps": [["course/_specification", "programme/programmeId"], "course/_rioJointPartnerCodes", "course/_rioForeignPartners"]
       }
     }
   },
