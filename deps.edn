@@ -22,8 +22,7 @@
 
  :aliases {:dev    {:extra-paths ["dev"]
                     :extra-deps {nl.surf/eduhub-validator {:git/url "https://github.com/SURFnet/eduhub-validator.git"
-                                                           :git/tag "v1.1.0"
-                                                           :git/sha "9d9d68db37734e5c356a40773f3939cdfd427a7b"}}}
+                                                           :git/sha "c7223a0730f6a82da3f2808543862110c38b77e0"}}}
            :build  {:deps       {io.github.seancorfield/build-clj
                                  {:git/tag   "v0.9.2" :git/sha "9c9f078"
                                   :deps/root "slim"}}
