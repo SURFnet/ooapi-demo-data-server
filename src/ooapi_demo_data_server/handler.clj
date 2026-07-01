@@ -4,11 +4,8 @@
    [cheshire.generate :as jsong]
    [clojure.instant :refer [read-instant-date read-instant-calendar]]
    [clojure.string :as str]
-   [clojure.set :refer [rename-keys intersection difference]]
-   [clojure.walk :as walk]
-   [integrant.core :as ig]
+   [clojure.set :refer [intersection difference]]
    [clojure.tools.logging :as log]
-   [ooapi-demo-data-server.data :as data]
    [ooapi-demo-data-server.common :as common]
    [ooapi-demo-data-server.fields-param :as fields-param]
    [reitit.ring :as ring]
@@ -176,17 +173,20 @@
        (take size)))
 
 (defn get-items
-  [req]
+  [{:keys [data] :as req}]
+  {:pre [data]}
   (let [datatype (req->datatype req)]
     (if (vector? datatype)
       (reduce
-       (fn [items dt] (concat items (get data/data dt)))
+       (fn [items dt] (concat items (get data dt)))
        []
        datatype)
-      (get data/data datatype))))
+      (get data datatype))))
 
+;; FIXME: this kind of formatting switches should be part of the data generator
+;; not the json encoding
 (jsong/add-encoder java.util.GregorianCalendar
-                   (if (= data/ooapi-version "v6")
+                   (if (= (System/getenv "OOAPI_VERSION") "v6")
                      (fn [c jsonGenerator]
                        (.writeString jsonGenerator (.format (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssXXX") (.getTime c))))
                      (fn [c jsonGenerator]
@@ -211,21 +211,21 @@
       (many-ref? x)))
 
 (defn resolve-single-ref
-  [[attr id]]
+  [data [attr id]]
   (let [datatype (keyword (namespace attr))
-        items (get data/data datatype)
+        items (get data datatype)
         indexed-items (common/index-by attr items)]
     (get indexed-items id)))
 
 (defn resolve-many-refs
-  [refs]
-  (map resolve-single-ref refs))
+  [data refs]
+  (map #(resolve-single-ref data %) refs))
 
 (defn resolve-ref
-  [ref]
+  [data ref]
   (if (many-ref? ref)
-    (resolve-many-refs ref)
-    (resolve-single-ref ref)))
+    (resolve-many-refs data ref)
+    (resolve-single-ref data ref)))
 
 ;; WHY ARE THE FOLLOWING TO FUNCTIONS DIFFERENT?
 (defn req->expands
@@ -241,8 +241,8 @@
       (inc q))))
 
 (defn clean-attr
-  [item attr]
-  (case data/ooapi-version
+  [data item attr]
+  (case (:ooapi-version data)
     "v4"
     (dissoc item attr)
 
@@ -269,12 +269,11 @@
 
 (defn attr-expand-mapping-lookup
   [x]
-  (keyword (namespace x) (or (get attr-v6-expand-mapping (name x)) (name x)))
-  )
+  (keyword (namespace x) (or (get attr-v6-expand-mapping (name x)) (name x))))
 
 (defn rename-expanded-attr
-  [item attr]
-  (case data/ooapi-version
+  [data item attr]
+  (case (:ooapi-version data)
     (or "v4" "v5")
     item
 
@@ -290,42 +289,42 @@
 
 
 (defn clean-item-attrs
-  [item attrs]
-  (reduce (fn [i attr] (clean-attr i attr)) item attrs))
+  [data item attrs]
+  (reduce (fn [i attr] (clean-attr data i attr)) item attrs))
 
 (defn clean-item
-  [item]
+  [data item]
   (reduce (fn [i attr]
             (if (ref? (get item attr))
-              (clean-attr i attr)
+              (clean-attr data i attr)
               i))
           item
           (keys item)))
 
 (defn rename-expanded-item-attrs
-  [item attrs]
-  (reduce (fn [i attr] (rename-expanded-attr i attr)) item attrs))
+  [data item attrs]
+  (reduce (fn [i attr] (rename-expanded-attr data i attr)) item attrs))
 
 (defn expand-attr
   "Expands an attribute by resolving the ref.
    Cleans expanded items so that they are suitable
    for returning in the response."
-  [item attr]
+  [data item attr]
   (if-let [ref (get item attr)]
-    (let [resolved-item-or-items (resolve-ref ref)
+    (let [resolved-item-or-items (resolve-ref data ref)
           first-item (if (map? resolved-item-or-items) resolved-item-or-items (first resolved-item-or-items))
           attrs-to-clean (->> first-item
                               (map (fn [[k v]] (when (ref? v) k)))
                               (remove nil?))
           cleaned-item-or-items (if (map? resolved-item-or-items)
-                                  (clean-item-attrs resolved-item-or-items attrs-to-clean)
-                                  (map (fn [item] (clean-item-attrs item attrs-to-clean)) resolved-item-or-items))]
+                                  (clean-item-attrs data resolved-item-or-items attrs-to-clean)
+                                  (map (fn [item] (clean-item-attrs data item attrs-to-clean)) resolved-item-or-items))]
       (assoc item attr cleaned-item-or-items))
     item))
 
 (defn expand-item-attrs
-  [item attrs]
-  (reduce (fn [i attr] (expand-attr i attr)) item attrs))
+  [data item attrs]
+  (reduce (fn [i attr] (expand-attr data i attr)) item attrs))
 
 (defn vectorize
   [x]
@@ -334,7 +333,8 @@
     [x]))
 
 (defn expand-item
-  [req item]
+  [{:keys [data] :as req} item]
+  {:pre [data]}
   (let [datatypes (vectorize (req->datatype req))
         expandable-attrs (req->expands req)
         attrs-to-expand (->> (get-in req [:query-params :expand])
@@ -343,22 +343,24 @@
                              (set)
                              (intersection expandable-attrs))
         attrs-to-clean (difference expandable-attrs attrs-to-expand)
-        attrs-to-expand-v6 (if (= data/ooapi-version "v6") (map attr-expand-mapping-lookup attrs-to-expand) attrs-to-expand)]
+        attrs-to-expand-v6 (if (= (:ooapi-version data) "v6") (map attr-expand-mapping-lookup attrs-to-expand) attrs-to-expand)]
     (-> item
-        (#(expand-item-attrs % attrs-to-expand-v6))
-        (#(clean-item-attrs % attrs-to-clean))
-        (#(rename-expanded-item-attrs % attrs-to-expand-v6)))))
+        (#(expand-item-attrs data % attrs-to-expand-v6))
+        (#(clean-item-attrs data % attrs-to-clean))
+        (#(rename-expanded-item-attrs data % attrs-to-expand-v6)))))
 
 (defn many-handler
-  [{:keys [ooapi-version] :as req}]
-  (let [page-size (get-in req [:query-params :pageSize])
+  [{:keys [data] :as req}]
+  {:pre [data]}
+  (let [ooapi-version (:ooapi-version data)
+        page-size (get-in req [:query-params :pageSize])
         page-number (get-in req [:query-params :pageNumber] 1)
         items (get-items req)
         filtered-items (->> items
                             (apply-select req)
                             (apply-filters req)
                             (map (partial expand-item req))
-                            (map clean-item)
+                            (map #(clean-item data %))
                             (map (partial fields-param/select-fields req)))
         total-pages (calc-total-pages page-size (count filtered-items))
         supports-pagination? (or (= ooapi-version "v5") (= ooapi-version "v6"))]
@@ -380,14 +382,15 @@
     (get indexed-items id)))
 
 (defn get-item-in-many
-  [req]
+  [{:keys [data] :as req}]
+  {:pre [data]}
   (let [id-path (req->id-path req)
         id (req->id req)
         datatypes (req->datatype req)]
     (first
      (remove nil?
              (for [datatype datatypes]
-               (let [items (get data/data datatype)
+               (let [items (get data datatype)
                      id-attr (keyword (name datatype)
                                       (name (last id-path)))
                      indexed-items (common/index-by id-attr items)]
@@ -401,19 +404,21 @@
       (get-item-in-one req))))
 
 (defn one-handler
-  [req]
+  [{:keys [data] :as req}]
   (->> (get-item req)
        (expand-item req)
-       (clean-item)
+       (clean-item data)
        (fields-param/select-fields req)))
 
 (defn singleton-handler
-  [req]
+  [{:keys [data] :as req}]
+  {:pre [data]}
   (let [datatype (req->datatype req)]
-    (first (get data/data datatype))))
+    (first (get data datatype))))
 
 (defn handler
   [req]
+  {:pre [(:data req)]}
   (let [parsed-req (-> req coerce-query-parameters coerce-path-parameters)
         cardinality (req->cardinality parsed-req)
         result (case cardinality
@@ -443,11 +448,6 @@
                 (Thread/sleep delay)
                 (normal-handler req))))))
 
-(defn insert-ooapi-version
-  [handler]
-  (fn [req]
-    (handler (assoc req :ooapi-version data/ooapi-version))))
-
 (def parameters-middleware
   "Middleware to parse urlencoded parameters from the query string and form
   body (if the request is a url-encoded form). Adds the following keys to
@@ -464,70 +464,28 @@
    :wrap params/wrap-params})
 
 (defn router
-  []
+  [routes handler]
   (ring/router
-   (->> (data/routes)
+   (->> routes
         (mapv (juxt :path #(assoc % :get handler))))
-   {:data {:middleware [insert-ooapi-version parameters-middleware]}}))
+   {:data {:middleware [parameters-middleware]}}))
 
-(defmethod ig/init-key ::app
-  [_ {:keys [chaos? chaos-modes]}]
-  (let [modes (->> (str/split chaos-modes #",")
+(defn with-data
+  [handler data]
+  (fn [req]
+    (handler (assoc req :data data))))
+
+(defn app
+  [data routes {:keys [chaos? chaos-modes] :as _config}]
+  (let [modes          (->> (str/split chaos-modes #",")
                    (map str/lower-case)
                    (map keyword))
-        normal-handler (ring/ring-handler (router)
-                                          handler
-                                          {:inject-match? true
-                                           :inject-router? false})]
+        normal-handler (-> (ring/ring-handler (router routes handler)
+                                              handler
+                                              {:inject-match?  true
+                                               :inject-router? false})
+                           (with-data data))]
     (when chaos? (log/warn :chaos? true :msg "ChAoS mode is on!" :modes modes))
     (if chaos?
       (create-chaos-handler normal-handler modes)
       normal-handler)))
-
-;; (defn try-app
-;;   ([uri query-string]
-;;    (let [app (ring/ring-handler (router))
-;;          request {:request-method :get
-;;                   :uri uri
-;;                   :query-string query-string}
-;;          response-str (:body (app request))]
-;;      nil))
-;;   ([uri]
-;;    (try-app uri nil)))
-
-;; (try-app "/organisations")
-
-;; (try-app "/courses" "pageSize=10")
-
-;; (try-app "/courses/81a4574e-c727-3beb-4703-45947372bda0" "expand=coordinators")
-
-;; (def testmap {:a "a" :b "b" :c {:d "d" :e "e"}})
-
-;; (select-keys testmap [:c/:d])
-
-;;   (try-app "/education-specifications")
-
-;;   ; no children 465b8146-59e1-a484-c72c-15b9d73e6f71
-;;   (try-app "/education-specifications/465b8146-59e1-a484-c72c-15b9d73e6f71" "expand=children")
-
-;;   ; with children fdc89678-1688-ce14-d649-6bcebac7f652
-;;   (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652" "expand=children")
-;;   (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652")
-
-;;   ; with parent 7f4b5fab-3020-06b9-ac67-4e81352ceed1
-;;   (try-app "/education-specifications/7f4b5fab-3020-06b9-ac67-4e81352ceed1" "expand=parent")
-;;   (try-app "/education-specifications/7f4b5fab-3020-06b9-ac67-4e81352ceed1")
-
-;;   ; no parent fdc89678-1688-ce14-d649-6bcebac7f652
-;;   (try-app "/education-specifications/fdc89678-1688-ce14-d649-6bcebac7f652" "expand=parent")
-
-;;   (try-app "/courses/a33cbd99-c437-3cee-d2e4-f5517958fd6c/offerings" #_"expand=parent")
-
-;;   (try-app "/offerings/e4ddcd1b-c4b3-ff68-a21d-81e40b478c23" "expand=course")
-
-;;   (->> data/data
-;;        :educationSpecification
-;;        (filter (comp #{#uuid "fdc89678-1688-ce14-d649-6bcebac7f652"} :educationSpecification/educationSpecificationId))
-;;        first)
-
-;;   (count (:course data/data))

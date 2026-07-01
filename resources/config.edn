@@ -1,0 +1,6 @@
+{:http {:port #long #or [#env PORT "8080"]}
+ :data {:ooapi-version  #or [#env OOAPI_VERSION "v6"]
+        :org-name       #or [#env ORGNAME "RootOrganisatie"]
+        :short-org-name #or [#env SHORTORGNAME "RO"]}
+ :app  {:chaos?      #boolean #env CHAOS
+        :chaos-modes #or [#env CHAOS_MODES "normal,empty,slow"]}}
