@@ -1,18 +1,11 @@
 (ns ooapi-demo-data-server.http
   (:require
     [org.httpkit.server :as http]
-    [integrant.core :as ig]))
+    [nl.jomco.resources :refer [closeable]]))
 
-(defmethod ig/init-key ::server
-  [_ {:keys [handler settings]}]
-  (http/run-server handler settings))
-
-(defmethod ig/halt-key! ::server
-  [_ server]
-  (server :timeout 100))
-
-(comment
-
-  (user/go)
-
-  nil)
+(defn server
+  [handler settings]
+  ;; implement `nl.jomco.resources/close` on the http-kit server
+  (let [callback (http/run-server handler settings)]
+    (closeable callback (fn [_]
+                          (callback :timeout 100)))))

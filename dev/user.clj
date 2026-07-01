@@ -1,28 +1,19 @@
-(ns user)
+(ns user
+  (:require [nl.jomco.resources :refer [defresource close]]
+            [ooapi-demo-data-server.system :as system]
+            [clojure.tools.logging :as log]))
 
-(defmacro jit
-  "Just in time loading of dependencies."
-  [sym]
-  `(requiring-resolve '~sym))
+;; TODO: Why does this not print to the REPL in CIDER?
 
-(defn set-prep!
+(log/info "User namespace Loaded. use (start!) to run service")
+
+(defresource system)
+
+(defn start!
   []
-  ((jit integrant.repl/set-prep!) #((jit ooapi-demo-data-server.system/prep) :dev)))
+  (defresource system (system/system)))
 
-(defn go
+(defn stop!
   []
-  (set-prep!)
-  ((jit integrant.repl/go)))
+  (close system))
 
-(defn reset
-  []
-  (set-prep!)
-  ((jit integrant.repl/reset)))
-
-(defn system
-  []
-  @(jit integrant.repl.state/system))
-
-(defn config
-  []
-  @(jit integrant.repl.state/config))

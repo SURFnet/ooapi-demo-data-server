@@ -13,7 +13,7 @@
   (-> opts
       (assoc :lib lib
              :version version
-             :main 'ooapi-demo-data-server.core
+             :main 'ooapi-demo-data-server.main
              :uber-file "target/ooapi-demo-data-server.jar"
              :src-dirs ["src"]
              :resource-dirs ["resources"])

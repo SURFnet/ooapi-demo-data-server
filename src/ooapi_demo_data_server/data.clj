@@ -7,18 +7,8 @@
    [clojure.string :as str]
    [nl.surf.demo-data.config :as config]
    [nl.surf.demo-data.world :as world]
-   [remworks.markov-chain :as mc]
-   [ooapi-demo-data-server.common :as common])
+   [remworks.markov-chain :as mc])
   (:import java.util.Calendar))
-
-;; use ooapi version specific resource files
-(def ^:dynamic ooapi-version (or (System/getenv "OOAPI_VERSION") "v6"))
-
-(def schema-file (str ooapi-version "/schema.json"))
-
-(def ooapi-file (str ooapi-version "/ooapi.json"))
-
-(def pop-file (str ooapi-version "/pop.edn"))
 
 (def text-spaces (->> "seeds/data.edn"
                       io/resource
@@ -151,10 +141,8 @@
   "Very ugly hack to make sure there is one root organization
   which has the env variables ORGNAME and SHORTORGNAME as its
   name and shortName."
-  [data]
-  (let [org-name (or (System/getenv "ORGNAME") "RootOrganisatie")
-        short-org-name (or (System/getenv "SHORTORGNAME") "RO")
-        is-root? (comp #{"root"} (case ooapi-version
+  [data {:keys [org-name short-org-name ooapi-version]}]
+  (let [is-root? (comp #{"root"} (case ooapi-version
                                    "v4" :organization/type
                                    "v5" :organization/organizationType))
         root-orgs (->> data :organization (filter is-root?))
@@ -182,10 +170,8 @@
   "Very ugly hack to make sure there is one root organization
   which has the env variables ORGNAME and SHORTORGNAME as its
   name and shortName."
-  [data]
-  (let [org-name (or (System/getenv "ORGNAME") "RootOrganisatie")
-        short-org-name (or (System/getenv "SHORTORGNAME") "RO")
-        is-root? (comp #{"root"} :organisation/organisationType)
+  [data {:keys [org-name short-org-name]}]
+  (let [is-root? (comp #{"root"} :organisation/organisationType)
         root-orgs (->> data :organisation (filter is-root?))
         root (cond-> (first root-orgs)
 
@@ -193,7 +179,7 @@
                (assoc :organisation/name (to-language-typed-string org-name))
 
                true
-               (assoc :organisation/name short-org-name))
+               (assoc :organisation/shortName short-org-name))
         rest-orgs (->> (rest root-orgs)
                        (map #(assoc % :organisation/name "department")))
         orgs (->> data
@@ -205,11 +191,11 @@
     (assoc data :organisation orgs)))
 
 (defn modify-org-hack-switcher
-  [data]
+  [data {:keys [ooapi-version] :as config}]
   (case ooapi-version
-    "v4" (modify-org-hack data)
-    "v5" (modify-org-hack data)
-    "v6" (modify-org-hack-v6 data)))
+    "v4" (modify-org-hack data config)
+    "v5" (modify-org-hack data config)
+    "v6" (modify-org-hack-v6 data config)))
 
 (defn add-children-attr
   [data entity-name self-attr-name parent-attr-name children-attr-name]
@@ -241,55 +227,60 @@
     (assoc data entity-name (map clean-fn entities))))
 
 (defn generate-data
-  []
-  (let [data (-> schema-file
-                 (io/resource)
-                 (slurp)
-                 (config/load-json)
-                 (world/gen (-> pop-file
-                                (io/resource)
-                                (slurp)
-                                (edn/read-string))))]
-    (cond-> data
+  [{:keys [ooapi-version seed] :as config}]
+  (binding [clojure.data.generators/*rnd* (java.util.Random. seed)]
+    (let [data (-> ooapi-version
+                   (str "/schema.json")
+                   (io/resource)
+                   (slurp)
+                   (config/load-json)
+                   (world/gen (->  (str ooapi-version "/pop.edn")
+                                   (io/resource)
+                                   (slurp)
+                                   (edn/read-string))))]
+      (cond-> data
+        true
+        (assoc :ooapi-version ooapi-version)
+      
+        true
+        (modify-org-hack-switcher config)
 
-      true
-      (modify-org-hack-switcher)
+        (= ooapi-version "v5")
+        (clean-empty-parents :educationSpecification :educationSpecification/parent)
 
-      (= ooapi-version "v5")
-      (clean-empty-parents :educationSpecification :educationSpecification/parent)
+        (= ooapi-version "v5")
+        (add-children-attr :educationSpecification :educationSpecification/educationSpecificationId :educationSpecification/parent :educationSpecification/children)
 
-      (= ooapi-version "v5")
-      (add-children-attr :educationSpecification :educationSpecification/educationSpecificationId :educationSpecification/parent :educationSpecification/children)
+        (= ooapi-version "v5")
+        (clean-empty-parents :academicSession :academicSession/parent)
 
-      (= ooapi-version "v5")
-      (clean-empty-parents :academicSession :academicSession/parent)
+        (= ooapi-version "v6")
+        (clean-empty-parents :academicSession :academicSession/parentId)
 
-      (= ooapi-version "v6")
-      (clean-empty-parents :academicSession :academicSession/parentId)
+        (= ooapi-version "v5")
+        (add-children-attr :academicSession :academicSession/academicSessionId :academicSession/parent :academicSession/children)
 
-      (= ooapi-version "v5")
-      (add-children-attr :academicSession :academicSession/academicSessionId :academicSession/parent :academicSession/children)
+        (= ooapi-version "v6")
+        (add-children-attr :academicSession :academicSession/academicSessionId :academicSession/parentId :academicSession/childrenIds)
 
-      (= ooapi-version "v6")
-      (add-children-attr :academicSession :academicSession/academicSessionId :academicSession/parentId :academicSession/childrenIds)
+        (= ooapi-version "v5")
+        (clean-empty-parents :program :program/parent)
 
-      (= ooapi-version "v5")
-      (clean-empty-parents :program :program/parent)
+        (= ooapi-version "v6")
+        (clean-empty-parents :programme :programme/parentId)
 
-      (= ooapi-version "v6")
-      (clean-empty-parents :programme :programme/parentId)
+        (= ooapi-version "v5")
+        (add-children-attr :program :program/programId :program/parent :program/childrenIds)
 
-      (= ooapi-version "v5")
-      (add-children-attr :program :program/programId :program/parent :program/childrenIds)
+        (= ooapi-version "v6")
+        (add-children-attr :programme :programme/programmeId :programme/parentId :programme/childrenIds)
+        ))))
 
-      (= ooapi-version "v6")
-      (add-children-attr :programme :programme/programmeId :programme/parentId :programme/childrenIds)
-      )))
-
-(def data (generate-data))
-
-(def schema (json/parse-string (slurp (io/resource ooapi-file))
+(defn mk-schema
+  [{:keys [ooapi-version] :as _config}]
+  (json/parse-string (slurp (io/resource (str ooapi-version "/ooapi.json")))
                                #(if (str/starts-with? % "/") % (keyword %))))
+
 
 (def route-data-v4
   {"/"                                                {:ooapi/cardinality :singleton
@@ -695,14 +686,15 @@
     :ooapi/id-path     [:path-params :learningOutcomeId]}})
 
 ;; use ooapi version specific data
-(def route-data
+(defn mk-route-data
+  [{:keys [ooapi-version] :as _config}]
   (case ooapi-version
     "v4" route-data-v4
     "v5" route-data-v5
     "v6" route-data-v6))
 
-(defn build-routes
-  [schema]
+(defn- build-routes
+  [route-data schema]
   (for [[path methods] (:paths schema)]
     (let [{:keys [description summary parameters]} (:get methods)]
       (merge {:description description
@@ -712,47 +704,7 @@
              (get route-data path {})))))
 
 (defn routes
-  []
-  (->> (build-routes schema)
-       (filter (comp (-> route-data keys set) :path)))) ; filter routes to only the ones we have route data for
-
-
-(comment
-  (->> schema
-       :paths
-       vals
-       (map :get)
-       (mapcat :parameters)
-       (distinct)
-       (map :schema)
-       (filter (comp #{"array"} :type))
-       (distinct))
-
-  (->> (routes)
-       first
-       :parameters))
-
-(comment
-  (def test-data (generate-data))
-
-  (keys test-data)
-
-  (->> test-data
-       :courseOffering
-       rand-nth
-       :courseOffering/consumers)
-
-
-  (def test-schema
-    (-> schema-file
-        (io/resource)
-        (slurp)
-        (json/parse-string true)))
-
-  (require '[ooapi-demo-data-server.common :as common])
-
-  (->> test-schema
-       :types
-       (common/index-by (comp keyword :name))
-       :courseOffering
-       :attributes))
+  [config]
+  (let [route-data (mk-route-data config)]
+    (->> (build-routes route-data (mk-schema config))
+         (filter (comp (-> route-data keys set) :path))))) ; filter routes to only the ones we have route data for
