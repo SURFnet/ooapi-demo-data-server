@@ -8,8 +8,6 @@
 
 (log/info "User namespace Loaded. use (start!) to run service")
 
-(defresource system)
-
 (defn start!
   []
   (defresource system (system/system)))

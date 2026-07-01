@@ -572,6 +572,20 @@
     :ooapi/select      {:refs #{:programme/organisationId}
                         :path [:path-params :organisationId]}}
 
+   "/organisations/{organisationId}/test-component-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :testComponentOffering
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/select      {:refs #{:testComponentOffering/organisationId}
+                        :path [:path-params :organisationId]}}
+
+   "/organisations/{organisationId}/learning-component-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :learningComponentOffering
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/select      {:refs #{:learningComponentOffering/organisationId}
+                        :path [:path-params :organisationId]}}
+   
    "/academic-sessions"
    {:ooapi/cardinality :many
     :ooapi/datatype    :academicSession
@@ -707,4 +721,4 @@
   [config]
   (let [route-data (mk-route-data config)]
     (->> (build-routes route-data (mk-schema config))
-         (filter (comp (-> route-data keys set) :path))))) ; filter routes to only the ones we have route data for
+        (filter (comp (-> route-data keys set) :path))))) ; filter routes to only the ones we have route data for
