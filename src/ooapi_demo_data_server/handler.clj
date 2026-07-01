@@ -468,7 +468,8 @@
   (ring/router
    (->> routes
         (mapv (juxt :path #(assoc % :get handler))))
-   {:data {:middleware [parameters-middleware]}}))
+   {:data {:middleware [parameters-middleware]}
+    :conflicts nil}))
 
 (defn with-data
   [handler data]

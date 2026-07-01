@@ -1,6 +1,7 @@
 (ns ooapi-demo-data-server.data
   (:require
    [cheshire.core :as json]
+   [clojure.tools.logging :as log]
    [clojure.data.generators :as gen]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -226,6 +227,20 @@
                                   (dissoc entity parent-attr-name))))]
     (assoc data entity-name (map clean-fn entities))))
 
+(defn gen*
+  [schema population]
+  (let [schema-types (set (map #(-> %
+                                    :name
+                                    namespace
+                                    keyword) schema))
+        population-types (set (keys population))]
+    (when-not (= population-types schema-types)
+      (log/warn "Population types not equal to schema types: "
+                (pr-str {:schema-types schema-types
+                         :population-types population-types})))
+    (world/gen schema population)))
+
+
 (defn generate-data
   [{:keys [ooapi-version seed] :as config}]
   (binding [clojure.data.generators/*rnd* (java.util.Random. seed)]
@@ -234,14 +249,14 @@
                    (io/resource)
                    (slurp)
                    (config/load-json)
-                   (world/gen (->  (str ooapi-version "/pop.edn")
-                                   (io/resource)
-                                   (slurp)
-                                   (edn/read-string))))]
+                   (gen* (->  (str ooapi-version "/pop.edn")
+                              (io/resource)
+                              (slurp)
+                              (edn/read-string))))]
       (cond-> data
         true
         (assoc :ooapi-version ooapi-version)
-      
+        
         true
         (modify-org-hack-switcher config)
 
@@ -572,20 +587,43 @@
     :ooapi/select      {:refs #{:programme/organisationId}
                         :path [:path-params :organisationId]}}
 
+   "/organisations/{organisationId}/test-components"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :testComponent
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/select      {:refs #{:testComponent/organisationId}
+                        :path [:path-params :organisationId]}}
+
+   "/organisations/{organisationId}/learning-components"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :learningComponent
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/select      {:refs #{:learningComponent/organisationId}
+                        :path [:path-params :organisationId]}}
+
    "/organisations/{organisationId}/test-component-offerings"
    {:ooapi/cardinality :many
     :ooapi/datatype    :testComponentOffering
     :ooapi/id-path     [:path-params :organisationId]
     :ooapi/select      {:refs #{:testComponentOffering/organisationId}
                         :path [:path-params :organisationId]}}
-
+   
    "/organisations/{organisationId}/learning-component-offerings"
    {:ooapi/cardinality :many
     :ooapi/datatype    :learningComponentOffering
     :ooapi/id-path     [:path-params :organisationId]
     :ooapi/select      {:refs #{:learningComponentOffering/organisationId}
                         :path [:path-params :organisationId]}}
-   
+
+   "/organisations/{organisationId}/groups"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :group
+    :ooapi/id-path     [:path-params :organisationId]
+    :ooapi/expands     #{:organisation/parent :organisation/children}
+    :ooapi/sort        #{"name" "groupId"}
+    :ooapi/select      {:refs #{:group/organisationId}
+                        :path [:path-params :organisationId]}}
+
    "/academic-sessions"
    {:ooapi/cardinality :many
     :ooapi/datatype    :academicSession
@@ -618,6 +656,26 @@
     :ooapi/select      {:refs #{:programmeOffering/academicSessionId}
                         :path [:path-params :academicSessionId]}}
 
+   "/academic-sessions/{academicSessionId}/learning-component-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :learningComponentOffering
+    :ooapi/id-path     [:path-params :academicSessionId]
+    :ooapi/expands     #{:academicSession/parent :academicSession/children}
+    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
+    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
+    :ooapi/select      {:refs #{:learningComponentOffering/academicSessionId}
+                        :path [:path-params :academicSessionId]}}
+
+   "/academic-sessions/{academicSessionId}/test-component-offerings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :testComponentOffering
+    :ooapi/id-path     [:path-params :academicSessionId]
+    :ooapi/expands     #{:academicSession/parent :academicSession/children}
+    :ooapi/filters     #{:teachingLanguages :offeringType :resultExpected}
+    :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
+    :ooapi/select      {:refs #{:testComponentOffering/academicSessionId}
+                        :path [:path-params :academicSessionId]}}
+
    "/courses"
    {:ooapi/cardinality :many
     :ooapi/datatype    :course
@@ -638,6 +696,38 @@
     :ooapi/sort        #{"startDateTime" "offeringId" "name" "endDateTime"}
     :ooapi/select      {:refs #{:courseOffering/courseId}
                         :path [:path-params :courseId]}}
+
+   "/courses/{courseId}/test-components"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :testComponent
+    :ooapi/id-path     [:path-params :courseId]
+    :ooapi/select      {:refs #{:testComponent/courseId}
+                        :path [:path-params :courseId]}}
+
+   "/courses/{courseId}/learning-components"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :learningComponent
+    :ooapi/id-path     [:path-params :courseId]
+    :ooapi/select      {:refs #{:learningComponent/courseId}
+                        :path [:path-params :courseId]}}
+
+
+   "/course-offerings/{courseOfferingId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :courseOffering
+    :ooapi/id-path     [:path-params :courseOfferingId]}
+
+   "/course-offerings/{courseOfferingId}/course-offering-associations"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :courseOfferingAssociation
+    :ooapi/select      [:refs #{:courseOfferingAssociation/courseOfferingId}
+                   :path-params :courseOfferingId]}
+
+   "/course-offerings/{courseOfferingId}/groups"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :groups
+    :ooapi/select      [:refs #{:groups/courseOfferingId}
+                   :path-params :courseOfferingId]}   
 
    "/programmes"
    {:ooapi/cardinality :many
@@ -679,6 +769,21 @@
     :ooapi/select      {:refs #{:programmeOffering/programmeId}
                         :path [:path-params :programmeId]}}
 
+   "/groups"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :group}
+
+   "/groups/{groupId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :group
+    :ooapi/id-path     [:path-params :groupId]}
+
+   "/groups/{groupId}/memberships"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :membership
+    :ooapi/select      {:refs #{:membership/groupId}
+                        :path [:path-params :groupId]}}
+   
    "/persons"
    {:ooapi/cardinality :many
     :ooapi/datatype    :person
@@ -689,6 +794,71 @@
    {:ooapi/cardinality :one
     :ooapi/datatype    :person
     :ooapi/id-path     [:path-params :personId]}
+
+   "/persons/me"
+   {:ooapi/cardinality :singleton
+    :ooapi/datatype    :person
+    :ooapi/id-path     [:path-params :personId]}
+
+   "/persons/{personId}/learning-component-offering-associations"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :learningComponentOfferingAssociation
+    :ooapi/select      {:refs #{:learningComponentOfferingAssociation/personId}
+                        :path [:path-params :personId]}}
+
+   "/persons/{personId}/test-component-offering-associations"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :testComponentOfferingAssociation
+    :ooapi/select      {:refs #{:testComponentOfferingAssociation/personId}
+                        :path [:path-params :personId]}}
+   
+   "/persons/{personId}/programme-offering-associations"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :programmeOfferingAssociation
+    :ooapi/select      {:refs #{:programmeOfferingAssociation/personId}
+                        :path [:path-params :personId]}}
+
+   "/persons/{personId}/course-offering-associations"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :courseOfferingAssociation
+    :ooapi/select      {:refs #{:courseOfferingAssociation/personId}
+                        :path [:path-params :personId]}}
+
+   "/programme-offerings/{programmeOfferingId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :programmeOffering
+    :ooapi/id-path     [:path-params :programmeOfferingId]}
+
+   "/programme-offerings/{programmeOfferingId}/programme-offering-associations"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :programmeOfferingAssociation
+    :ooapi/select      {:refs #{:programmeOfferingAssociation/programmeOfferingId}
+                        :path [:path-params :programmeOfferingId]}}
+
+   "/programme-offerings/{programmeOfferingId}/groups"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :groups
+    :ooapi/select      [:refs #{:groups/programmeOfferingId}
+                   :path-params :programmeOfferingId]}
+
+   "/rooms"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :room}
+
+   "/buildings"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :building}
+
+   "/buildings/{buildingId}"
+   {:ooapi/cardinality :one
+    :ooapi/datatype    :building
+    :ooapi/id-path     [:path-params :buildingId]}
+
+   "/buildings/{buildingId}/rooms"
+   {:ooapi/cardinality :many
+    :ooapi/datatype    :rooms
+    :ooapi/select      [:refs #{:room/buildingId}
+                        :path-params :buildingId]}
 
    "/learning-outcomes"
    {:ooapi/cardinality :many
