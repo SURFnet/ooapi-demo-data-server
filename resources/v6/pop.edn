@@ -8,6 +8,12 @@
  :courseOffering 120
  :person 200
  :learningOutcome 100
- :course-programme 20}
+ :group 60
+ :course-programme 20
  :testComponentOffering 20
+ :testComponentOfferingAssociation 100
+ :testComponent 10
  :learningComponentOffering 20
+ :learningComponentOfferingAssociation 100
+ :membership 500
+ :building 5}
