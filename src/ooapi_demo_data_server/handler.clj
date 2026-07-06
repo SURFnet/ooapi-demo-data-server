@@ -349,6 +349,34 @@
         (#(clean-item-attrs data % attrs-to-clean))
         (#(rename-expanded-item-attrs data % attrs-to-expand-v6)))))
 
+(def consumers-keys
+  #{:programme/consumers
+    :course/consumers
+    :programmeOffering/consumers})
+
+(defn get-consumers
+  [item]
+  (some item consumers-keys))
+
+(defn dissoc-consumers
+  [item]
+  (apply dissoc item consumers-keys))
+
+(defn select-consumer
+  [{{:keys [ooapi-version]} :data :as req} item]
+  (if-let [consumers (get-consumers item)]
+    (if (= ooapi-version "v6")
+      (let [accept (get-in req [:headers "accept"] "")]
+        (if-let [[_ consumer-key] (re-matches #"application/vnd\.oeapi\+json.*;consumer=(\w+).*" accept)]
+          (-> item
+              (dissoc-consumers)
+              (assoc :consumer (->> consumers
+                                    (filter #(= (get % "consumerKey") consumer-key))
+                                    first)))
+          (dissoc-consumers item)))
+      item)
+    item))
+
 (defn many-handler
   [{:keys [data] :as req}]
   {:pre [data]}
@@ -359,8 +387,9 @@
         filtered-items (->> items
                             (apply-select req)
                             (apply-filters req)
+                            (map (partial select-consumer req))
                             (map (partial expand-item req))
-                            (map #(clean-item data %))
+                            (map (partial clean-item data))
                             (map (partial fields-param/select-fields req)))
         total-pages (calc-total-pages page-size (count filtered-items))
         supports-pagination? (or (= ooapi-version "v5") (= ooapi-version "v6"))]
@@ -406,6 +435,7 @@
 (defn one-handler
   [{:keys [data] :as req}]
   (->> (get-item req)
+       (select-consumer req)
        (expand-item req)
        (clean-item data)
        (fields-param/select-fields req)))
@@ -414,7 +444,10 @@
   [{:keys [data] :as req}]
   {:pre [data]}
   (let [datatype (req->datatype req)]
-    (first (get data datatype))))
+    (->> datatype
+         (get data)
+         first
+         (select-consumer req))))
 
 (defn handler
   [{:keys [data] :as req}]
