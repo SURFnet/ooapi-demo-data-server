@@ -417,8 +417,7 @@
     (first (get data datatype))))
 
 (defn handler
-  [req]
-  {:pre [(:data req)]}
+  [{:keys [data] :as req}]
   (let [parsed-req (-> req coerce-query-parameters coerce-path-parameters)
         cardinality (req->cardinality parsed-req)
         result (case cardinality
@@ -432,7 +431,9 @@
       (nil? result)     {:status 404
                          :body "Not found"}
       :else             {:status 200
-                         :headers {"Content-Type" "application/json"}
+                         :headers {"Content-Type" (if (= (:ooapi-version data) "v5")
+                                                    "application/json"
+                                                    "application/vnd.oeapi+json;version=6.0")}
                          :body (json/encode result {:key-fn name})})))
 
 (defn create-chaos-handler
