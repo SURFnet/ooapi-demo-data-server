@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.12] - 2026-07-06
+
+### Changed
+- Update dependencies (Logback 1.5.37 incl. CVE-2026-13006 fix, GitHub Actions major bumps: docker/* v4/v6/v7, actions/checkout v7, actions/cache v6, cosign-installer 4.1.2)
+
 ## [1.11] - 2026-06-04
 
 ### Changed
