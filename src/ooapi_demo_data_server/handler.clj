@@ -434,11 +434,12 @@
 
 (defn one-handler
   [{:keys [data] :as req}]
-  (->> (get-item req)
-       (select-consumer req)
-       (expand-item req)
-       (clean-item data)
-       (fields-param/select-fields req)))
+  (when-some [item (get-item req)]
+    (->> item
+         (select-consumer req)
+         (expand-item req)
+         (clean-item data)
+         (fields-param/select-fields req))))
 
 (defn singleton-handler
   [{:keys [data] :as req}]
