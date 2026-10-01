@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.0] - 2026-10-01
+- Add OEAPI v6 demodata
+- Remove OEAPI v4 demodata
+
 ## [1.12] - 2026-07-06
 
 ### Changed
