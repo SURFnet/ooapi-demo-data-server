@@ -2,7 +2,7 @@
 
 OOAPI Demodata server - just add water to get an working [OOAPI](https://openonderwijsapi.nl/) endpoint with realistically looking data. This is useful for applications that have to work with an OOAPI endpoint but that do not yet have access to a real endpoint implemented by an educational institution.
 
-When started, OOAPI Demodata server generates random, but realistically looking data. All entities described in the [OOAPI specification 4.0](https://open-education-api.github.io/specification/v4/docs.html) or [OOAPI specification 5.0](https://open-education-api.github.io/specification/v5/docs.html) get generated, including links between entities.
+When started, OOAPI Demodata server generates random, but realistically looking data. All entities described in the [OOAPI specification 5.0](https://oeapi.eu/specification/v5/docs.html) or [OOAPI specification 6.0](https://oeapi.eu/specification/v6.0/index/) get generated, including links between entities.
 
 ## Building and running
 OOAPI Demodata server is implemented in Clojure. There are two ways of building and running it:
@@ -30,7 +30,7 @@ Then run using:
 ## Features
 
 ### Choosing the OOAPI version
-Use the environment variable `OOAPI_VERSION` to choose which OOAPI version to support. Allowed values are `v4` and `v5`.
+Use the environment variable `OOAPI_VERSION` to choose which OOAPI version to support. Allowed values are `v5` and `v6`.
 
 ### Setting the seed
 Each time the server runs, new random data is generated. To make runs reproducible you can set the seed user for random generation. Use the environment variable `SEED` to an integer. Reusing the same integer across runs should result in the same data being generated each time.
