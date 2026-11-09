@@ -362,18 +362,27 @@
   [item]
   (apply dissoc item consumers-keys))
 
+(defn consumer-key-from-request
+  [req]
+  (when-let [[_ k] (re-matches #"application/vnd\.oeapi\+json.*;consumer=(\w+).*" (get-in req [:headers "accept"] ""))]
+    k))
+
+(defn consumer-version-from-request
+  [req]
+  (when-let [[_ v] (re-matches #"application/vnd\.oeapi\+json.*;consumer-version=([0-9.]+).*" (get-in req [:headers "accept"] ""))]
+    v))
+
 (defn select-consumer
   [{{:keys [ooapi-version]} :data :as req} item]
   (if-let [consumers (get-consumers item)]
     (if (= ooapi-version "v6")
-      (let [accept (get-in req [:headers "accept"] "")]
-        (if-let [[_ consumer-key] (re-matches #"application/vnd\.oeapi\+json.*;consumer=(\w+).*" accept)]
-          (-> item
-              (dissoc-consumers)
-              (assoc :consumer (->> consumers
-                                    (filter #(= (get % "consumerKey") consumer-key))
-                                    first)))
-          (dissoc-consumers item)))
+      (if-let [consumer-key (consumer-key-from-request req)]
+        (-> item
+            (dissoc-consumers)
+            (assoc :consumer (->> consumers
+                                  (filter #(= (get % "consumerKey") consumer-key))
+                                  first)))
+        (dissoc-consumers item))
       item)
     item))
 
@@ -458,7 +467,9 @@
                  :many (many-handler parsed-req)
                  :one (one-handler parsed-req)
                  :singleton (singleton-handler parsed-req)
-                 :error)]
+                 :error)
+        consumer-key (consumer-key-from-request req)
+        consumer-version (consumer-version-from-request req)]
     (cond
       (= :error result) {:status 501
                          :body "Can't handle request"}
@@ -467,7 +478,9 @@
       :else             {:status 200
                          :headers {"Content-Type" (if (= (:ooapi-version data) "v5")
                                                     "application/json"
-                                                    "application/vnd.oeapi+json;version=6.0")}
+                                                    (cond-> "application/vnd.oeapi+json;version=6.0"
+                                                      consumer-key
+                                                      (str ";consumer=" consumer-key ";consumer-version=" (or consumer-version "1.0"))))}
                          :body (json/encode result {:key-fn name})})))
 
 (defn create-chaos-handler
